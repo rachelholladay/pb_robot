@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.pardir, os.pardir, os.pardir))
 
-from ss_pybullet.ikfast.compile import compile_ikfast
+from pb_robot.ikfast.compile import compile_ikfast
 
 # Build C++ extension by running: 'python setup.py'
 # see: https://docs.python.org/3/extending/building.html
