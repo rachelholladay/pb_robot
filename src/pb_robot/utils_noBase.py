@@ -194,13 +194,17 @@ def get_urdf_flags(cache=False, cylinder=False):
         flags |= p.URDF_USE_IMPLICIT_CYLINDER
     return flags
 
-def load_pybullet(filename, fixed_base=False, scale=1., **kwargs):
+def load_pybullet(filename, pose=None, fixed_base=False, scale=1., **kwargs):
     # fixed_base=False implies infinite base mass
     with LockRenderer():
         if filename.endswith('.urdf'):
             flags = get_urdf_flags(**kwargs)
-            body = p.loadURDF(filename, useFixedBase=fixed_base, flags=flags,
-                              globalScaling=scale, physicsClientId=CLIENT)
+            if pose:
+                body = p.loadURDF(filename, pose[0], pose[1], useFixedBase=fixed_base, flags=flags,
+                                  globalScaling=scale, physicsClientId=CLIENT)
+            else:
+                body = p.loadURDF(filename, useFixedBase=fixed_base, flags=flags,
+                                  globalScaling=scale, physicsClientId=CLIENT)
         elif filename.endswith('.sdf'):
             body = p.loadSDF(filename, physicsClientId=CLIENT)
         elif filename.endswith('.xml'):
@@ -239,14 +243,13 @@ def get_model_path(rel_path): # TODO: add to search path
     directory = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(directory, rel_path)
 
-def load_model(rel_path, pose=None, **kwargs):
+def load_model(rel_path=None, abs_path=None, pose=None, **kwargs):
     # TODO: error with loadURDF when loading MESH visual and CYLINDER collision
-    abs_path = get_model_path(rel_path)
+    if not abs_path:
+        abs_path = get_model_path(rel_path)
     add_data_path()
     #with LockRenderer():
-    body = load_pybullet(abs_path, **kwargs)
-    if pose is not None:
-        body.set_pose(pose)
+    body = load_pybullet(abs_path, pose, **kwargs)
     return body
 
 #####################################

@@ -17,10 +17,9 @@ JOINT_TYPES = {
     p.JOINT_GEAR: 'gear', # 6
 }
 
-def createBody(path, **kwargs):
-    body_id = utils.load_model(path, **kwargs)
+def createBody(rel_path=None, abs_path=None, pose=None, **kwargs):
+    body_id = utils.load_model(rel_path=rel_path, abs_path=abs_path, pose=pose, **kwargs)
     return Body(body_id)
-
 
 class Body(object):
     def __init__(self, bodyID): #info, **kwargs):
