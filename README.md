@@ -4,9 +4,10 @@ This is a fork of [Caelan's ss-pybullet](https://github.com/caelan/ss-pybullet) 
 
 ## Installation
 
-The first thing is to install the primary two python dependencies: 
+The first thing is to install the dependencies:
 ```
-$ pip install numpy pybullet
+$ pip2 install numpy pybullet recordclassc catkin_pkg IPython
+$ pip2 install git+https://github.com/personalrobotics/tsr.git
 ```
 
 Given that, we now setup a catkin workspace. While there are not known dependencies, these instructions were writen from Ubuntu 16.04 and ROS Kinetic. For this installation we will assume ROS is already installed. To create a catkin workspace (named `my-workspace` below): 
@@ -45,7 +46,7 @@ Also, most of the functionality is treating PyBullet as a kinematic simulation, 
 
 ## Example Usage
 
-Below is `scripts/example_panda.py` to show some basic functionality:
+Below is `scripts/example_panda.py` to show some basic functionality. Run it by copying it into the src directory.
 
 ```
 # Launch pybullet
