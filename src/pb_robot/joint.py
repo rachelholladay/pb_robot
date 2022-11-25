@@ -22,6 +22,9 @@ class Joint(object): # inherit what?
         self.JointInfo = JointInfo
         self.JointState = JointState
 
+    def __repr__(self):
+        return self.get_joint_name()
+
     def get_joint_info(self):
         return self.JointInfo(*p.getJointInfo(self.bodyID, self.jointID, physicsClientId=CLIENT))
 

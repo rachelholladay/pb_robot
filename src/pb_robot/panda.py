@@ -324,12 +324,13 @@ class PandaHand(pb_robot.body.Body):
                 with pb_robot.utils.LockRenderer():
                     bodyID = pb_robot.utils.load_model(urdf_file, fixed_base=True)
 
-        #self.__robot = pb_robot.body.Body(bodyID)
-        #self.left_finger = self.__robot.joint_from_name(left_finger_name)
-        #self.right_finger = self.__robot.joint_from_name(right_finger_name)
+        self.bodyID = bodyID
         pb_robot.body.Body.__init__(self, bodyID)
         self.left_finger = self.joint_from_name(left_finger_name)
         self.right_finger = self.joint_from_name(right_finger_name)
+        self.joints = [self.left_finger, self.right_finger]
+        self.jointsID = [j.jointID for j in self.joints]
+        self.torque_limits = [50, 50] # Faked
 
     def Open(self):
         '''Open the fingers by setting their positions to the upper limit'''

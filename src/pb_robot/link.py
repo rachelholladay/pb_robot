@@ -27,6 +27,9 @@ class Link(object):
         #parent_link_from_joint = get_link_parent
         self.link_ancestors = None
 
+    def __repr__(self):
+        return self.get_link_name()
+
     def get_link_name(self):  
         if self.linkID == self.base_link:
             return self.body.get_base_name()
