@@ -5,6 +5,11 @@
 <!-- =================================================================================== -->
 <robot name="panda" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <link name="panda_link0">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link0.dae"/>
@@ -18,6 +23,11 @@
     </collision>
   </link>
   <link name="panda_link1">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link1.dae"/>
@@ -40,6 +50,11 @@
     <limit effort="87" lower="-2.8973" upper="2.8973" velocity="2.1750"/>
   </joint>
   <link name="panda_link2">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link2.dae"/>
@@ -62,6 +77,11 @@
     <limit effort="87" lower="-1.7628" upper="1.7628" velocity="2.1750"/>
   </joint>
   <link name="panda_link3">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link3.dae"/>
@@ -84,6 +104,11 @@
     <limit effort="87" lower="-2.8973" upper="2.8973" velocity="2.1750"/>
   </joint>
   <link name="panda_link4">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link4.dae"/>
@@ -106,6 +131,11 @@
     <limit effort="87" lower="-3.0718" upper="-0.0698" velocity="2.1750"/>
   </joint>
   <link name="panda_link5">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link5.dae"/>
@@ -128,6 +158,11 @@
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
   </joint>
   <link name="panda_link6">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link6.dae"/>
@@ -150,6 +185,11 @@
     <limit effort="12" lower="-0.0175" upper="3.7525" velocity="2.6100"/>
   </joint>
   <link name="panda_link7">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/link7.dae"/>
@@ -171,7 +211,13 @@
     <dynamics friction="10.0"/>
     <limit effort="12" lower="-2.8973" upper="2.8973" velocity="2.6100"/>
   </joint>
-  <link name="panda_link8"/>
+  <link name="panda_link8">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
+  </link>
   <joint name="panda_joint8" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0.107"/>
     <parent link="panda_link7"/>
@@ -184,6 +230,11 @@
     <origin rpy="0 0 -0.785398163397" xyz="0 0 0"/>
   </joint>
   <link name="panda_hand">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/hand.dae"/>
@@ -197,6 +248,11 @@
     </collision>
   </link>
   <link name="panda_leftfinger">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>  
     <visual>
       <geometry>
         <mesh filename="package://franka_description/meshes/visual/finger.dae"/>
@@ -210,6 +266,11 @@
     </collision>
   </link>
   <link name="panda_rightfinger">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
     <visual>
       <origin rpy="0 0 3.14159265359" xyz="0 0 0"/>
       <geometry>
@@ -239,7 +300,13 @@
     <limit effort="20" lower="0.0" upper="0.04" velocity="0.2"/>
     <mimic joint="panda_finger_joint1"/>
   </joint>
-  <link name="tool_link"/>
+  <link name="tool_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1" />
+    </inertial>
+  </link>
   <joint name="tool_joint" type="fixed">
     <origin rpy="0 0 2.35619449019" xyz="0.0 0 0.1"/>
     <axis xyz="0 0 1"/>
