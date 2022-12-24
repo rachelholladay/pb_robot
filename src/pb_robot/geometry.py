@@ -118,6 +118,11 @@ def tform_from_pose(pose):
     tform[:3, :3] = matrix_from_quat(quat)
     return tform
 
+def tform_from_point(point):
+    tform = np.eye(4)
+    tform[0:3, 3] = point
+    return tform
+
 def matrix_from_quat(quat):
     return np.array(p.getMatrixFromQuaternion(quat, physicsClientId=CLIENT)).reshape(3, 3)
 
