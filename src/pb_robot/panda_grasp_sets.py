@@ -118,26 +118,30 @@ def box_grasp(box, push_distance=0.0):
 
     return chain_list + rotated_chain_list
 
-def cylinder_grasp(cap, push_distance=0.0):
+def cylinder_grasp(cylinder, height_shrink=0.8, push_distance=0.0):
     """
-    @param cap The cap to grasp
+    @param cylinder The cylinder to grasp
     @param push_distance The distance to push before grasping
     """
+    aabb = pb_robot.aabb.get_aabb(cylinder)
+    (cylinder_l, cylinder_w, cylinder_h) = pb_robot.aabb.get_aabb_extent(aabb)
+    cylinder_shrunk_h = height_shrink*cylinder_h
+
     epsilon = 0.005
     ee_to_palm_distance = 0.105 
     lateral_offset = ee_to_palm_distance + push_distance
 
-    T0_w = cap.get_transform()
+    T0_w = cylinder.get_transform()
     chain_list = []
 
-    # Base of cap (opposite side of head)
+    # Base of cylinder (opposite side of head)
     Tw_e_front1 = numpy.array([[0., 0., -1., lateral_offset],
                                [0., 1.,  0., 0.0],
                                [1., 0.,  0., 0.0], 
                                [0., 0.,  0., 1.]])
     Bw_yz = numpy.zeros((6, 2))
     Bw_yz[1, :] = [-epsilon, epsilon]
-    Bw_yz[2, :] = [-0.05, 0.05]
+    Bw_yz[2, :] = [-cylinder_shrunk_h/2.0, cylinder_shrunk_h/2.0]
     Bw_yz[5, :] = [-math.pi, math.pi]
     front_tsr1 = TSR(T0_w=T0_w, Tw_e=Tw_e_front1, Bw=Bw_yz)
     grasp_chain_front1 = TSRChain(sample_start=False, sample_goal=True,
@@ -148,12 +152,12 @@ def cylinder_grasp(cap, push_distance=0.0):
     # Top and Bottom sides
     Tw_e_side1 = numpy.array([[1., 0.,  0., 0.0],
                               [0.,-1.,  0., 0.0],
-                              [0., 0., -1., lateral_offset],
+                              [0., 0., -1., lateral_offset+(cylinder_h/4.0)],
                               [0., 0.,  0., 1.]])
 
     Tw_e_side2 = numpy.array([[1., 0., 0., 0.0],
                               [0., 1., 0., 0.0],
-                              [0., 0., 1., -lateral_offset],
+                              [0., 0., 1., -lateral_offset-(cylinder_h/4.0)],
                               [0., 0., 0., 1.]])
     Bw_side = numpy.zeros((6, 2))
     Bw_side[0, :] = [-epsilon, epsilon]
