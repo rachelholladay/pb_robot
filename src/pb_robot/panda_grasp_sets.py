@@ -118,7 +118,7 @@ def box_grasp(box, push_distance=0.0):
 
     return chain_list + rotated_chain_list
 
-def cylinder_grasp(cylinder, height_shrink=0.8, push_distance=0.0):
+def cylinder_grasp(cylinder, height_shrink=0.8, epsilon=0.005, push_distance=0.0, side_grasps_only=False):
     """
     @param cylinder The cylinder to grasp
     @param push_distance The distance to push before grasping
@@ -127,7 +127,6 @@ def cylinder_grasp(cylinder, height_shrink=0.8, push_distance=0.0):
     (cylinder_l, cylinder_w, cylinder_h) = pb_robot.aabb.get_aabb_extent(aabb)
     cylinder_shrunk_h = height_shrink*cylinder_h
 
-    epsilon = 0.005
     ee_to_palm_distance = 0.105 
     lateral_offset = ee_to_palm_distance + push_distance
 
@@ -166,11 +165,11 @@ def cylinder_grasp(cylinder, height_shrink=0.8, push_distance=0.0):
     side_tsr1 = TSR(T0_w=T0_w, Tw_e=Tw_e_side1, Bw=Bw_side)
     grasp_chain_side1 = TSRChain(sample_start=False, sample_goal=True,
                                  constrain=False, TSR=side_tsr1)
-    chain_list += [grasp_chain_side1]  #TOP GRASP
+    if not side_grasps_only: chain_list += [grasp_chain_side1]  #TOP GRASP
     side_tsr2 = TSR(T0_w=T0_w, Tw_e=Tw_e_side2, Bw=Bw_side)
     grasp_chain_side2 = TSRChain(sample_start=False, sample_goal=True,
                                  constrain=False, TSR=side_tsr2)
-    chain_list += [grasp_chain_side2]   #BOTTOM GRASP 
+    if not side_grasps_only: chain_list += [grasp_chain_side2]   #BOTTOM GRASP 
 
     # Each chain in the list can also be rotated by 180 degrees around z
     rotated_chain_list = []
