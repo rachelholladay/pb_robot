@@ -10,5 +10,7 @@ from . import collisions
 from . import panda
 from . import wsg50_hand
 from . import yumi
+from . import aabb
+from . import geometry
 
 from . import planners
