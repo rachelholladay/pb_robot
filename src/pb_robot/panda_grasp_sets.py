@@ -152,12 +152,12 @@ def cylinder_grasp(cylinder, height_shrink=0.8, epsilon=0.005, hand_offset=0.105
     # Top and Bottom sides
     Tw_e_side1 = numpy.array([[1., 0.,  0., 0.0],
                               [0.,-1.,  0., 0.0],
-                              [0., 0., -1., hand_offset+(cylinder_h/4.0)],
+                              [0., 0., -1., hand_offset+(cylinder_h/3.0)],
                               [0., 0.,  0., 1.]])
 
     Tw_e_side2 = numpy.array([[1., 0., 0., 0.0],
                               [0., 1., 0., 0.0],
-                              [0., 0., 1., -hand_offset-(cylinder_h/4.0)],
+                              [0., 0., 1., -hand_offset-(cylinder_h/3.0)],
                               [0., 0., 0., 1.]])
     Bw_side = numpy.zeros((6, 2))
     Bw_side[0, :] = [-epsilon, epsilon]
