@@ -118,23 +118,24 @@ def box_grasp(box, push_distance=0.0):
 
     return chain_list + rotated_chain_list
 
-def cylinder_grasp(cylinder, height_shrink=0.8, epsilon=0.005, push_distance=0.0, side_grasps_only=False):
+def cylinder_grasp(cylinder, height_shrink=0.8, epsilon=0.005, hand_offset=0.105, side_grasps_only=False):
     """
     @param cylinder The cylinder to grasp
     @param push_distance The distance to push before grasping
     """
+
     aabb = pb_robot.aabb.get_aabb(cylinder)
     (cylinder_l, cylinder_w, cylinder_h) = pb_robot.aabb.get_aabb_extent(aabb)
     cylinder_shrunk_h = height_shrink*cylinder_h
 
-    ee_to_palm_distance = 0.105 
-    lateral_offset = ee_to_palm_distance + push_distance
+    #ee_to_palm_distance = 0.15 #0.105 TODO make the parameter 
+    #lateral_offset = ee_to_palm_distance + push_distance   (now called handoffset)
 
     T0_w = cylinder.get_transform()
     chain_list = []
 
     # Base of cylinder (opposite side of head)
-    Tw_e_front1 = numpy.array([[0., 0., -1., lateral_offset],
+    Tw_e_front1 = numpy.array([[0., 0., -1., hand_offset],
                                [0., 1.,  0., 0.0],
                                [1., 0.,  0., 0.0], 
                                [0., 0.,  0., 1.]])
@@ -151,12 +152,12 @@ def cylinder_grasp(cylinder, height_shrink=0.8, epsilon=0.005, push_distance=0.0
     # Top and Bottom sides
     Tw_e_side1 = numpy.array([[1., 0.,  0., 0.0],
                               [0.,-1.,  0., 0.0],
-                              [0., 0., -1., lateral_offset+(cylinder_h/4.0)],
+                              [0., 0., -1., hand_offset+(cylinder_h/4.0)],
                               [0., 0.,  0., 1.]])
 
     Tw_e_side2 = numpy.array([[1., 0., 0., 0.0],
                               [0., 1., 0., 0.0],
-                              [0., 0., 1., -lateral_offset-(cylinder_h/4.0)],
+                              [0., 0., 1., -hand_offset-(cylinder_h/4.0)],
                               [0., 0., 0., 1.]])
     Bw_side = numpy.zeros((6, 2))
     Bw_side[0, :] = [-epsilon, epsilon]
