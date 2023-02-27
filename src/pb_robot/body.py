@@ -159,7 +159,7 @@ class Body(object):
         for j in self.joints:
             if j.get_joint_name() == name:
                 return j
-        raise ValueError
+        raise ValueError("Name {} not found".format(name))
 
     def link_from_name(self, name):
         if name == self.get_base_name():
