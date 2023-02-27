@@ -1,0 +1,141 @@
+<?xml version="1.0" ?>
+<robot name="spot">
+  <link name="base">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/base.obj"/>
+      </geometry>
+      <material name="base"> <color rgba="1 0.8431 0 1"/></material>    
+    </visual>
+  </link>
+  <link name="arm0.link_sh0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_sh0.obj"/>
+      </geometry>
+      <material name="arm0.link_sh0"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.sh0" type="revolute">
+    <origin xyz="0.292 0.0 0.188" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <parent link="base"/>
+    <child link="arm0.link_sh0"/>
+     <limit effort="1000" velocity="1000.00" lower="-2.61799387799149441136" upper="3.14159265358979311599"/>
+  </joint>
+  <link name="arm0.link_sh1">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_sh1.obj"/>
+      </geometry>
+      <material name="arm0.link_sh1"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.sh1" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <parent link="arm0.link_sh0"/>
+    <child link="arm0.link_sh1"/>
+     <limit effort="1000" velocity="1000.00" lower="-3.14159265358979311599" upper="0.52359877559829881565"/>
+  </joint>
+  <link name="arm0.link_hr0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_hr0.obj"/>
+      </geometry>
+      <material name="arm0.link_hr0"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.hr0" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <parent link="arm0.link_sh1"/>
+    <child link="arm0.link_hr0"/>
+    <limit effort="1000" velocity="1000.00" lower="-1e6" upper="1e6"/>
+    <!--<limit effort="1000" velocity="1000.00" lower="-3.14" upper="3.14"/>-->
+  </joint>
+  <link name="arm0.link_el0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_el0.obj"/>
+      </geometry>
+      <material name="arm0.link_el0"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.el0" type="revolute">
+    <origin xyz="0.3385 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <parent link="arm0.link_hr0"/>
+    <child link="arm0.link_el0"/>
+     <limit effort="1000" velocity="1000.00" lower="0" upper="3.14159265358979311599"/>
+  </joint>
+  <link name="arm0.link_el1">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_el1.obj"/>
+      </geometry>
+      <material name="arm0.link_el1"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.el1" type="revolute">
+    <origin xyz="0.40330 0.0 0.0750" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <parent link="arm0.link_el0"/>
+    <child link="arm0.link_el1"/>
+     <limit effort="1000" velocity="1000.00" lower="-2.79252680319092716487" upper="2.79252680319092716487"/>
+  </joint>
+  <link name="arm0.link_wr0">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_wr0.obj"/>
+      </geometry>
+      <material name="arm0.link_wr0"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.wr0" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <parent link="arm0.link_el1"/>
+    <child link="arm0.link_wr0"/>
+     <limit effort="1000" velocity="1000.00" lower="-1.83259571459404613236" upper="1.83259571459404613236"/>
+  </joint>
+  <link name="arm0.link_wr1">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_wr1.obj"/>
+      </geometry>
+      <material name="arm0.link_wr1"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.wr1" type="revolute">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <parent link="arm0.link_wr0"/>
+    <child link="arm0.link_wr1"/>
+     <limit effort="1000" velocity="1000.00" lower="-2.87979326579064354163" upper="2.87979326579064354163"/>
+  </joint>
+  <link name="arm0.link_fngr">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="link_models/arm0.link_fngr.obj"/>
+      </geometry>
+      <material name="arm0.link_fngr"> <color rgba="0.2 0.2 0.2 1"/></material>    
+    </visual>
+  </link>
+  <joint name="arm0.f1x" type="revolute">
+    <origin xyz="0.11745 0 0.014820" rpy="0 0 0"/>
+    <axis xyz="0.0 1.0 0.0"/>
+    <parent link="arm0.link_wr1"/>
+    <child link="arm0.link_fngr"/>
+     <limit effort="1000" velocity="1000.00" lower="-1.57" upper="0.0"/>
+  </joint>
+</robot>
