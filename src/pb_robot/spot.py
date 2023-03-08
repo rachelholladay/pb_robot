@@ -36,7 +36,7 @@ class SpotArm(pb_robot.body.Body):
         self.ik_info = pb_robot.ikfast.utils.IKFastInfo(module_name='spot_arm.ikfast_spot_arm',
                                                         base_link='base',
                                                         ee_link='arm0.link_wr1',
-                                                        free_joints=['arm0.wr1'])
+                                                        free_joints=['arm0.wr0'])
 
         self.arm = Manipulator(self.id, self.arm_joints, 'arm0.link_wr1', self.ik_info)
 
