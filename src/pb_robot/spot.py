@@ -31,14 +31,14 @@ class SpotArm(pb_robot.body.Body):
         pb_robot.body.Body.__init__(self, self.id)
 
 
-        self.arm_joint_names = ['arm0.sh0', 'arm0.sh1', 'arm0.hr0', 'arm0.el0', 'arm0.el1', 'arm0.wr0', 'arm0.wr1'] 
+        self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_hr0', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
         self.ik_info = pb_robot.ikfast.utils.IKFastInfo(module_name='spot_arm.ikfast_spot_arm',
                                                         base_link='base',
-                                                        ee_link='arm0.link_wr1',
-                                                        free_joints=['arm0.wr0'])
+                                                        ee_link='arm_link_wr1',
+                                                        free_joints=['arm_wr0'])
 
-        self.arm = Manipulator(self.id, self.arm_joints, 'arm0.link_wr1', self.ik_info)
+        self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1', self.ik_info)
 
         '''
         self.hand = PandaHand(self.id)
@@ -164,8 +164,7 @@ class Manipulator(object):
     def get_collisionfn(self, obstacles=None, self_collisions=True):
         if obstacles is None:
             # If no set of obstacles given, assume all obstacles in the environment (that aren't the robot and not grasped)
-            obstacles = [b for b in pb_robot.utils.get_bodies() if self.get_name() not in b.get_name()
-                         and b.get_name() not in self.grabbedObjects.keys()]
+            obstacles = [b for b in pb_robot.utils.get_bodies() if self.get_name() not in b.get_name()]
         attachments = []
         key = (frozenset(obstacles), frozenset(attachments), self_collisions)
         if key not in self.collisionfn_cache:
