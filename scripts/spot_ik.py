@@ -17,8 +17,8 @@ twoPi = 2*np.pi
 # shoulder to base (0, 0, 0) - that is height above floor
 SHOULDER_OFFSET = inverse_matrix(translation_matrix([0.292,  0.      ,  0.873]))
 
-# IK_FRAME = 'arm_link_wr1'
-#     <origin rpy="-1.5707 0 1.5707" xyz="0.25 0.0 0.0" />
+'''
+# For Tomas's definition of end effector frame
 TRANSFORM_TO_IK_FRAME = \
         inverse_matrix(
             concatenate_matrices(
@@ -28,6 +28,8 @@ TRANSFORM_TO_IK_FRAME = \
                 rotation_matrix(np.pi/2, (0.,0.,1.)),
                 rotation_matrix(-np.pi/2, (1.,0.,0.)),
                        ))
+'''
+TRANSFORM_TO_IK_FRAME = numpy.eye(4)
 
 # This is a 3R elbow manipulator with a wrist with 3 intersecting axes
 # That is, the simplest IK in the universe, solution below modeled on Hauser's boodk.
@@ -135,7 +137,6 @@ def analytic_ik(tool_pose_rel_base, min_limits, max_limits,
     wrist_pose_rel_shoulder = concatenate_matrices(SHOULDER_OFFSET, wrist_pose_rel_base)
 
     solutions = analytic_spot_ik_6(wrist_pose_rel_shoulder, min_limits, max_limits)
-    pb_robot.viz.draw_tform(wrist_pose_rel_shoulder, width=10, length=0.3) 
     return select_solution(solutions, get_l1_distance,
                            nearby_conf=nearby_conf_angles)
 
