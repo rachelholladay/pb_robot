@@ -4,6 +4,19 @@
 <!-- |    EDITING THIS FILE BY HAND IS NOT RECOMMENDED                                 | -->
 <!-- =================================================================================== -->
 <robot name="spot">
+  <link name="world_link">
+  <visual>
+  <origin xyz="0 0 0" rpy="0 0 0"/>
+  <geometry>
+  <box size="0.001 0.001 0.001"/>
+  </geometry>
+  </visual>
+  </link>
+  <joint name="base_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0.685"/>
+    <parent link="world_link"/>
+    <child link="body"/>
+  </joint>
   <link name="body">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -247,5 +260,11 @@
     <parent link="arm_link_wr1"/>
     <child link="arm_link_fngr"/>
     <limit effort="1000" velocity="1000.00" lower="-1.57" upper="0.0"/>
+  </joint>
+  <link name="arm_end_effector_link"/>
+  <joint name="end_effector_joint" type="fixed">
+    <origin rpy="-1.5707963267948966 0. 1.5707963267948966" xyz="0.25 0.0 0.0" />
+    <parent link="arm_link_wr1" />
+    <child link="arm_end_effector_link" />
   </joint>
 </robot>
