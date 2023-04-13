@@ -8,40 +8,6 @@ import scipy
 import IPython
 import pb_robot
 
-def dumb_ik(arm, ik_target, start_q=None, max_iterations=5):
-    '''
-    @param ik_target the 4x4 transform we want to achieve
-    @param seed_q the starting guess for the ik solver. If none is given we 
-                use the current arm configuration
-    @return Joint configuration q such that q = IK(ik_target) or
-                None if no solution could be found
-    '''
-    if start_q is None:
-        start_q = arm.GetJointValues()
-
-    (lower_real, upper_real) = arm.GetJointLimits()
-    eps = numpy.ones((7))*0.001
-    lower = numpy.add(lower_real, eps)
-    upper = numpy.subtract(upper_real, eps)
-
-    def ik_cost(current_q, desired_pose):
-        # Define the cost as geodesic distance between FK(current_pose) and desired pose
-        current_pose = arm.ComputeFK(current_q)
-        geodesic = pb_robot.geometry.GeodesicDistance(current_pose, desired_pose, r=1) #0.17)
-        current_quat = pb_robot.geometry.quat_from_matrix(current_pose[0:3, 0:3])
-        desired_quat = pb_robot.geometry.quat_from_matrix(desired_pose[0:3, 0:3])
-        ang_dist = 0.5*pb_robot.geometry.quat_angle_between(current_quat, desired_quat)
-        return max(geodesic, ang_dist)
-
-    for _ in range(max_iterations):
-        # Keep seeding it with the previous solution till solution is food enough
-        (start_q, final_value, _, _, _) = scipy.optimize.fmin_slsqp(ik_cost, x0=start_q, args=(ik_target,), bounds=list(zip(lower, upper)), full_output=True, disp=False)
-
-        # Result of optimization is sufficiently close that we return the solution
-        if final_value < 1e-3: 
-            return start_q
-    return None
-
 if __name__ == '__main__':
     # Launch pybullet
     pb_robot.utils.connect(use_gui=True)
