@@ -18,6 +18,9 @@ class Spot(pb_robot.body.Body):
                 self.id = pb_robot.utils.load_model(self.urdf_file, fixed_base=True)
         pb_robot.body.Body.__init__(self, self.id)
 
+        self.arm_joint_names = ['arm_sh0', 'arm_sh1','arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
+        self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
+        self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1')
 
 class SpotArm(pb_robot.body.Body):
     '''Create all the functions for controlling the Panda Robot arm'''
@@ -33,24 +36,13 @@ class SpotArm(pb_robot.body.Body):
 
         self.arm_joint_names = ['arm_sh0', 'arm_sh1','arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
-        self.ik_info = pb_robot.ikfast.utils.IKFastInfo(module_name='spot_arm.ikfast_spot_arm',
-                                                        base_link='body',
-                                                        ee_link='arm_link_wr1',
-                                                        free_joints=[])
-                                                        #free_joints=['arm_wr0'])
-
-        self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1', self.ik_info)
-
-        '''
-        self.hand = PandaHand(self.id)
-        self.arm = Manipulator(self.id, self.arm_joints, self.hand, 'panda_hand', self.ik_info, self.torque_limits, self.startq)
-        '''
+        self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1')
 
 class Manipulator(object):
     '''Class for Arm specific functions. Most of this is simply syntatic sugar for function
     calls to body functions. Within the documentation, N is the number of degrees of 
     freedom, which is 7 for Panda '''
-    def __init__(self, bodyID, joints, eeName, ik):
+    def __init__(self, bodyID, joints, eeName):
         '''Establish all the robot specific variables and set up key
         data structures. Eventually it might be nice to read the specific variables
         from a combination of the urdf and a yaml file'''
@@ -62,7 +54,6 @@ class Manipulator(object):
         self.eeFrame = self.__robot.link_from_name(eeName)
 
         # Use IK fast for inverse kinematics
-        self.ik_info = ik
         self.collisionfn_cache = {}
         self.startq = [0]*len(joints)
 
@@ -144,6 +135,8 @@ class Manipulator(object):
         @param (optional) seed_q Configuration to bias the IK
         @return Nx1 configuration if successful, else 'None' '''
 
+        raise NotImplementedError("Need to swap out new IK")
+
         #These function operate in transforms but the IK function operates in poses
         pose = pb_robot.geometry.pose_from_tform(transform)
 
@@ -193,6 +186,7 @@ class Manipulator(object):
 
         # Restore configuration
         self.SetJointValues(oldq)
+        print(val, distances)
         return val and distances
 
     def HasClearance(self, q, d=0.01):
@@ -207,7 +201,7 @@ class Manipulator(object):
                     break
                 pts = p.getClosestPoints(self.__robot.id, self.__robot.id, distance=d, linkIndexA=linkI, linkIndexB=linkJ)
                 if len(pts) > 0:
-                    #print(i, linkI, j, linkJ)
+                    print(i, linkI, j, linkJ)
                     return False
         return True
 
