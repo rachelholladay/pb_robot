@@ -31,12 +31,13 @@ class SpotArm(pb_robot.body.Body):
         pb_robot.body.Body.__init__(self, self.id)
 
 
-        self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_hr0', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
+        self.arm_joint_names = ['arm_sh0', 'arm_sh1','arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
         self.ik_info = pb_robot.ikfast.utils.IKFastInfo(module_name='spot_arm.ikfast_spot_arm',
-                                                        base_link='base',
+                                                        base_link='body',
                                                         ee_link='arm_link_wr1',
-                                                        free_joints=['arm_wr0'])
+                                                        free_joints=[])
+                                                        #free_joints=['arm_wr0'])
 
         self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1', self.ik_info)
 
@@ -172,7 +173,7 @@ class Manipulator(object):
                 self.__robot, self.joints, obstacles, attachments, self_collisions)
         return self.collisionfn_cache[key]
 
-    def IsCollisionFree(self, q, obstacles=None, self_collisions=True, handJoint=None):
+    def IsCollisionFree(self, q, obstacles=None, self_collisions=True):
         '''Check if a configuration is collision-free. Given any grasped objects
         we do not collision-check against those. 
         @param q Configuration to check at
@@ -180,11 +181,7 @@ class Manipulator(object):
         @return Boolean True if without collisions, false otherwise'''
         # This is to cover that the collision function sets joints, but not using the arm version
         oldq = self.GetJointValues()
-        self.SetJointValues(oldq)
-        if handJoint is not None:
-            (oldhand, _) = self.hand.GetJointPositions()
-            self.hand.MoveTo(handJoint)
-
+    
         collisionfn = self.get_collisionfn(obstacles=obstacles, self_collisions=self_collisions)
 
         # Evaluate if in collision
@@ -196,20 +193,21 @@ class Manipulator(object):
 
         # Restore configuration
         self.SetJointValues(oldq)
-        if handJoint is not None:
-            self.hand.MoveTo(oldhand*2)
         return val and distances
 
-    def HasClearance(self, q):
+    def HasClearance(self, q, d=0.01):
         for i in self.__robot.all_links:
             for j in self.__robot.all_links:
                 linkI = i.linkID
                 linkJ = j.linkID
-                # Dont want to check adjancent links or link 8 (fake hand joint)
-                if (abs(linkI-linkJ) < 2) or (linkI == 8) or (linkJ == 8):
+                # Dont want to check adjancent links. (and additional ones...?)
+                # arm_link_sh0 1 body -1
+                # arm_link_hr0 3 arm_link_sh0 1
+                if (abs(linkI-linkJ) < 2) or (linkI == 1 and linkJ == -1) or (linkI == 3 and linkJ == 1): 
                     break
-                pts = p.getClosestPoints(self.__robot.id, self.__robot.id, distance=0.01, linkIndexA=linkI, linkIndexB=linkJ)
+                pts = p.getClosestPoints(self.__robot.id, self.__robot.id, distance=d, linkIndexA=linkI, linkIndexB=linkJ)
                 if len(pts) > 0:
+                    #print(i, linkI, j, linkJ)
                     return False
         return True
 
