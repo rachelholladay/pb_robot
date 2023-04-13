@@ -3,9 +3,7 @@ import time
 import numpy
 import pybullet as p
 import pb_robot
-from .panda_controls import PandaControls
-
-from pb_robot.ikfast.ikfast import closest_inverse_kinematics, ikfast_inverse_kinematics
+from transformations import translation_matrix, rotation_matrix, inverse_matrix, concatenate_matrices
 
 class Spot(pb_robot.body.Body):
     '''Create all the functions for controlling the Panda Robot arm'''
@@ -18,9 +16,12 @@ class Spot(pb_robot.body.Body):
                 self.id = pb_robot.utils.load_model(self.urdf_file, fixed_base=True)
         pb_robot.body.Body.__init__(self, self.id)
 
-        self.arm_joint_names = ['arm_sh0', 'arm_sh1','arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
+        self.eeName = 'arm_link_wr1'
+        self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
-        self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1')
+
+        self.hand = SpotHand(self.id, eeFrame=self.link_from_name(self.eeName))
+        self.arm = Manipulator(self.id, self.arm_joints, self.hand, self.eeName)
 
 class SpotArm(pb_robot.body.Body):
     '''Create all the functions for controlling the Panda Robot arm'''
@@ -33,16 +34,16 @@ class SpotArm(pb_robot.body.Body):
                 self.id = pb_robot.utils.load_model(self.urdf_file, fixed_base=True)
         pb_robot.body.Body.__init__(self, self.id)
 
-
-        self.arm_joint_names = ['arm_sh0', 'arm_sh1','arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
+        self.hand = SpotHand(self.id)
+        self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
-        self.arm = Manipulator(self.id, self.arm_joints, 'arm_link_wr1')
+        self.arm = Manipulator(self.id, self.arm_joints, self.hand, 'arm_link_wr1')
 
 class Manipulator(object):
     '''Class for Arm specific functions. Most of this is simply syntatic sugar for function
     calls to body functions. Within the documentation, N is the number of degrees of 
     freedom, which is 7 for Panda '''
-    def __init__(self, bodyID, joints, eeName):
+    def __init__(self, bodyID, joints, hand, eeName):
         '''Establish all the robot specific variables and set up key
         data structures. Eventually it might be nice to read the specific variables
         from a combination of the urdf and a yaml file'''
@@ -52,6 +53,7 @@ class Manipulator(object):
         self.joints = joints
         self.jointsID = [j.jointID for j in self.joints]
         self.eeFrame = self.__robot.link_from_name(eeName)
+        self.hand = hand
 
         # Use IK fast for inverse kinematics
         self.collisionfn_cache = {}
@@ -99,20 +101,23 @@ class Manipulator(object):
         @return 4x4 transform of end effector in the world'''
         return pb_robot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
 
-    def ComputeFK(self, q, tform=None):
+    def ComputeFK(self, q, pose=None):
         '''Compute the forward kinematics of a configuration q
         @param configuration q
         @return 4x4 transform of the end effector when the robot is at
                 configuration q'''
-        if tform is not None:
-            old_pose = self.get_transform()
-            self.set_transform(tform)
+        if pose is None:
+            pose = self.__robot.get_transform()
+
         old_q = self.GetJointValues()
+        old_pose = self.__robot.get_transform()
+
+        self.__robot.set_transform(pose)
         self.SetJointValues(q)
         pose = self.GetEETransform()
+
         self.SetJointValues(old_q)
-        if tform is not None:
-            self.set_transform(tform)    
+        self.__robot.set_transform(old_pose)
         return pose 
 
     def randomConfiguration(self):
@@ -124,36 +129,24 @@ class Manipulator(object):
             dofs = numpy.zeros(len(lower))
             for i in range(len(lower)):
                 dofs[i] = random.uniform(lower[i], upper[i])
-            if self.IsCollisionFree(dofs, self_collisions=True, obstacles=[]):
+            if self.IsCollisionFree(dofs, obstacles=[]): #self_collisions=True
                 return dofs
 
-    def ComputeIK(self, transform, seed_q=None, max_distance=0.2):
-        '''Compute the inverse kinematics of a transform, with the option 
-        to bias towards a seed configuration. If no IK can be found with that
-        bias we attempt to find an IK without that bias
-        @param transform 4x4 desired pose of end effector
-        @param (optional) seed_q Configuration to bias the IK
-        @return Nx1 configuration if successful, else 'None' '''
+    def ComputeIK(self, wrist_pose_worldF, robot_worldF=None, seed_q=None):
+        '''Compute the analytic inverse kinematics of a transform, with the option
+        to bias towards a seed configuration'''
 
-        raise NotImplementedError("Need to swap out new IK")
+        # shoulder to base (0, 0, 0) - that is height above floor
+        SHOULDER_OFFSET = inverse_matrix(translation_matrix([0.292, 0., 0.873]))
+        if robot_worldF is None:
+            robot_worldF = self.get_transform()
 
-        #These function operate in transforms but the IK function operates in poses
-        pose = pb_robot.geometry.pose_from_tform(transform)
+        wrist_pose_robotF = numpy.dot(numpy.linalg.inv(robot_worldF), wrist_pose_worldF)
+        wrist_pose_shoulderF = concatenate_matrices(SHOULDER_OFFSET, wrist_pose_robotF)
+        min_limits, max_limits = self.GetJointLimits()
 
-        if seed_q is None:
-            q = next(ikfast_inverse_kinematics(self.__robot, self.ik_info, 
-                                               self.eeFrame, pose, max_time=1), None)
-        else:
-            # Seeded IK uses the current ik value, so set that and then reset change
-            old_q = self.GetJointValues()
-            self.SetJointValues(seed_q)
-            q = next(closest_inverse_kinematics(self.__robot, self.ik_info, self.eeFrame,
-                                                pose, max_distance=max_distance, max_time=0.05), None)
-            self.SetJointValues(old_q)
-            # If no ik, fall back on unseed version
-            if q is None:
-                return self.ComputeIK(transform)
-        return q 
+        solutions = analytic_spot_ik_6(wrist_pose_shoulderF, min_limits, max_limits)
+        return select_solution(solutions, get_l1_distance, nearby_conf=seed_q)
 
     def get_collisionfn(self, obstacles=None, self_collisions=True):
         if obstacles is None:
@@ -166,12 +159,14 @@ class Manipulator(object):
                 self.__robot, self.joints, obstacles, attachments, self_collisions)
         return self.collisionfn_cache[key]
 
-    def IsCollisionFree(self, q, obstacles=None, self_collisions=True):
+    def IsCollisionFree(self, q, obstacles=None, self_collisions=False):
         '''Check if a configuration is collision-free. Given any grasped objects
         we do not collision-check against those. 
         @param q Configuration to check at
         @param self_collisions Boolean on whether to include self-collision checks
         @return Boolean True if without collisions, false otherwise'''
+        #FIXME Spot gives self-collision (seemingly incorrect) so we default turn it off
+
         # This is to cover that the collision function sets joints, but not using the arm version
         oldq = self.GetJointValues()
     
@@ -186,7 +181,7 @@ class Manipulator(object):
 
         # Restore configuration
         self.SetJointValues(oldq)
-        print(val, distances)
+        #print(val, distances)
         return val and distances
 
     def HasClearance(self, q, d=0.01):
@@ -194,14 +189,12 @@ class Manipulator(object):
             for j in self.__robot.all_links:
                 linkI = i.linkID
                 linkJ = j.linkID
-                # Dont want to check adjancent links. (and additional ones...?)
-                # arm_link_sh0 1 body -1
-                # arm_link_hr0 3 arm_link_sh0 1
-                if (abs(linkI-linkJ) < 2) or (linkI == 1 and linkJ == -1) or (linkI == 3 and linkJ == 1): 
+                # Dont want to check adjancent links. (and a few extra)
+                if (abs(linkI-linkJ) < 2) or (linkI == 1 and linkJ == -1) or (linkJ == 0) or (linkI == 16 and linkJ == 14): 
                     break
                 pts = p.getClosestPoints(self.__robot.id, self.__robot.id, distance=d, linkIndexA=linkI, linkIndexB=linkJ)
                 if len(pts) > 0:
-                    print(i, linkI, j, linkJ)
+                    #print(i, linkI, j, linkJ)
                     return False
         return True
 
@@ -226,54 +219,144 @@ class Manipulator(object):
             time.sleep(timestep)
 
                         
-class PandaHand(pb_robot.body.Body):
-    '''Set position commands for the panda hand. Have not yet included
-    gripping with force.'''
-    def __init__(self, bodyID=None, left_finger_name='panda_finger_joint1', right_finger_name='panda_finger_joint2'):
-        '''Pull left and right fingers from robot's joint list'''
+class SpotHand(pb_robot.body.Body):
+    '''Set position commands for the Spot hand'''
+    def __init__(self, bodyID=None, finger_name='arm_f1x', eeFrame=None):
+        '''Pull fingers from robot's joint list'''
+
+        '''
+        # No separate hand URDF
         if bodyID is None:
             urdf_file = 'models/franka_description/robots/hand.urdf'
             with pb_robot.helper.HideOutput():
                 with pb_robot.utils.LockRenderer():
                     bodyID = pb_robot.utils.load_model(urdf_file, fixed_base=True)
+        '''
 
         self.bodyID = bodyID
         pb_robot.body.Body.__init__(self, bodyID)
-        self.left_finger = self.joint_from_name(left_finger_name)
-        self.right_finger = self.joint_from_name(right_finger_name)
-        self.joints = [self.left_finger, self.right_finger]
+        self.finger = self.joint_from_name(finger_name)
+        self.joints = [self.finger]
         self.jointsID = [j.jointID for j in self.joints]
-        self.torque_limits = [50, 50] # Faked
+        if eeFrame is None:
+            eeFrame = self.__robot.link_from_name('arm_link_wr1')
+        self.eeFrame = eeFrame
 
     def Open(self):
         '''Open the fingers by setting their positions to the upper limit'''
-        self.left_finger.set_joint_position(0.04)
-        self.right_finger.set_joint_position(0.04)
+        self.finger.set_joint_position(-1)
 
     def Close(self):
         '''Close the fingers by setting their positions to the inner limit'''
-        self.left_finger.set_joint_position(0)
-        self.right_finger.set_joint_position(0)
+        self.finger.set_joint_position(0)
 
-    def MoveTo(self, distance):
-        '''Move the fingers uniformally such that 'distance' is the width
-        between the two fingers. Therefore, each each finger will move 
-        distance/2. 
-        @param distance Desired distance between fingers'''
-        if not (0 <= distance <= 0.08):
-            raise IOError("Invalid distance request. The value must be between 0 and 0.08")
-        finger_distance = distance / 2.0
-        self.left_finger.set_joint_position(finger_distance)
-        self.right_finger.set_joint_position(finger_distance)
+    def MoveTo(self, q):
+        '''Move the hand to desired configuration q
+        @param q Joint Configuration'''
+        self.finger.set_joint_position(q)
 
     def GetJointPositions(self):
         '''Get the joint poisitions of the fingers
         @return tuple of left finger joint position and right finger 
                 joint position'''
-        return (self.left_finger.get_joint_position(), self.right_finger.get_joint_position())
+        return (self.finger.get_joint_position())
 
     def GetEETransform(self):
         '''Get the end effector transform
         @return 4x4 transform of end effector in the world'''
-        eeFrame = self.__robot.link_from_name('panda_hand')
-        return pb_robot.geometry.tform_from_pose(eeFrame.get_link_pose())
+        return pb_robot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
+
+#########################################
+# Spot IK Utils
+#########################################
+# This is a 3R elbow manipulator with a wrist with 3 intersecting axes
+# That is, the simplest IK in the universe, solution below modeled on Hauser's boodk.
+
+def analytic_spot_ik_6(wrist_pose_rel_shoulder, min_limits, max_limits):
+    px, py, pz = wrist_pose_rel_shoulder[:3, 3]   # wrist position
+    l2 = 0.3385
+    l3 = numpy.sqrt(0.40330**2 + 0.0750**2)
+    q3_off = numpy.arctan2(0.0750, 0.40330)
+    # Solve the first three joints based on position
+    q123_sols = []
+    xl = numpy.sqrt(px**2 + py**2)
+    q23 = IK2R(l2, l3, xl, -pz)
+    if q23 is None:
+        return []
+    q1 = numpy.arctan2(py, px)
+    for (q2, q3) in q23:
+        q123_sols.append((q1, q2, q3 + q3_off))
+    q23 = IK2R(l2, l3, -xl, -pz)
+    assert q23 is not None
+    q1 = q1 + numpy.pi
+    for (q2, q3) in q23:
+        q123_sols.append((q1, q2, q3 + q3_off))
+
+    # Solve for the wrist angles
+    qfull_sols = []
+    for (q1, q2, q3) in q123_sols:
+        r3_inv = inverse_matrix(
+                  concatenate_matrices(rotation_matrix(q1, (0, 0, 1)),
+                                       rotation_matrix(q2+q3, (0, 1, 0))))
+        W = concatenate_matrices(r3_inv, wrist_pose_rel_shoulder)
+        q5 = numpy.arccos(W[0, 0])
+        for q in (q5, -q5):
+            s5 = numpy.sin(q)
+            q4 = numpy.arctan2(W[1, 0]/s5, -W[2, 0]/s5)
+            q6 = numpy.arctan2(W[0, 1]/s5, W[0, 2]/s5)
+            angles = (q1, q2, q3, q4, q, q6)
+            if all_between(min_limits, angles, max_limits):
+                qfull_sols.append(angles)
+    return qfull_sols
+
+def IK2R(L1, L2, x, y):
+    xy_sq = x**2 + y**2
+    c2 = (xy_sq - L1**2 - L2**2)/(2*L1*L2)
+    if abs(c2) > 1:
+        return None
+    elif c2 == 1.0:
+        return [(numpy.arctan2(y, x), 0)]
+    elif c2 == -1.0 and xy_sq != 0.:
+        return [(numpy.arctan2(y, x), numpy.pi)]
+    elif c2 == -1.0 and xy_sq == 0.:
+        return [(q1, numpy.pi) for q1 in [0, 2*numpy.pi]]
+    else:
+        q2_1 = numpy.arccos(c2)
+        q2_2 = -q2_1
+        theta = numpy.arctan2(y, x)
+        q1q2 = [(theta - numpy.arctan2(L2*numpy.sin(q2_i), L1+L2*numpy.cos(q2_i)), q2_i) \
+                for q2_i in (q2_1, q2_2)]
+        for q1, q2 in q1q2:
+            xk = (L1*numpy.cos(q1) + L2*numpy.cos(q1 + q2))
+            yk = (L1*numpy.sin(q1) + L2*numpy.sin(q1 + q2))
+            # print(f'xk={xk}, yk={yk}')
+            assert abs(x - xk) < 0.0001
+            assert abs(y - yk) < 0.0001
+        return q1q2
+
+def angle_diff(x, y):
+    twoPi = 2*numpy.pi
+    z = (x - y) % twoPi
+    return z - twoPi if z > numpy.pi else z
+
+def get_l1_distance(sol1, sol2):   # max angle difference
+    maxDiff = 0.0
+    diff = 0.0
+    for i in range(len(sol1)):
+        diff = abs(angle_diff(sol1[i], sol2[i]))
+        if diff > maxDiff:
+            maxDiff = diff
+    return maxDiff
+
+def all_between(lower_limits, values, upper_limits):
+    assert len(lower_limits) == len(values)
+    assert len(values) == len(upper_limits)
+    return numpy.less_equal(lower_limits, values).all() and \
+           numpy.less_equal(values, upper_limits).all()
+
+def select_solution(solutions, get_distance, nearby_conf_angles=None, **kwargs):
+    if not solutions:
+        return None
+    if nearby_conf_angles is None:
+        return random.choice(solutions)
+    return min(solutions, key=lambda conf: get_distance(nearby_conf_angles, conf, **kwargs))

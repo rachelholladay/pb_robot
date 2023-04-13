@@ -8,6 +8,8 @@ import scipy
 import IPython
 import pb_robot
 
+import random
+
 if __name__ == '__main__':
     # Launch pybullet
     pb_robot.utils.connect(use_gui=True)
@@ -15,30 +17,19 @@ if __name__ == '__main__':
     pb_robot.utils.set_default_camera()
 
     # Create robot object 
-    #robot = pb_robot.spot.Spot()
-    #robot.set_point([0, 0, 0.69])
+    robot = pb_robot.spot.Spot()
+    robot.set_point([0, 0, 0])
 
-    robot = pb_robot.spot.SpotArm()
-    robot.set_point([0, 0, 0.1])
- 
+    #robot = pb_robot.spot.SpotArm()
+    #robot.set_point([0, 0, 0])
+
     # Add floor object 
     curr_path = os.getcwd()
     models_path = os.path.join(os.path.dirname(curr_path), 'models')
     floor_file = os.path.join(models_path, 'short_floor.urdf')
     floor = pb_robot.body.createBody(floor_file)
+    floor.set_point([0, 0, 0])
 
-
-    '''
-    # Example functions over robot arm
-    q = robot.arm.GetJointValues()
-    pose = robot.arm.ComputeFK(q)
-    pose[2, 3] -= 0.1
-    pb_robot.viz.draw_pose(pb_robot.geometry.pose_from_tform(pose), length=0.5, width=10)
-    newq = robot.arm.ComputeIK(pose)
-    if newq is not None:
-        input("Move to desired pose?")
-        robot.arm.SetJointValues(newq)
-    '''
     IPython.embed()
     
     # Close out Pybullet
