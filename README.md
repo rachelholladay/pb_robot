@@ -9,7 +9,11 @@ The first thing is to install the primary python dependencies:
 $ pip install numpy pybullet recordclass networkx
 ```
 
-Given that, we now setup a catkin workspace. While there are not known dependencies, these instructions were writen from Ubuntu 18.04 and ROS Melodic. For this installation we will assume ROS is already installed. To create a catkin workspace (named `my-workspace` below): 
+Given the dependencies there are two possible ways to use the repo. The first is to treat it as a standalone repo and just clone it. As long as you dont want to use the TSR repo for grasp sets, there are no additional dependencies. The second strategy is to use a catkin workspace. If you have already got ROS, want to use a bunch of packages and/or want to match the robot setup then this works out nicely. 
+
+### Setup Catkin Workspace (Optional) 
+
+For this installation we will assume ROS is already installed. To create a catkin workspace (named `my-workspace` below): 
 ```
 $ mkdir my-workspace && cd my-workspace
 $ catkin config --extend /opt/ros/melodic
@@ -24,7 +28,7 @@ $ cd pb_robot
 $ git checkout python3
 $ cd ..
 ```
-This package uses TSRs to define grasp sets and therefore we clone an additional package: 
+If you'd like to use TSRs to define grasp sets, we clone an additional package: 
 ```
 $ git clone https://github.com/rachelholladay/tsr.git
 $ cd tsr
@@ -38,7 +42,9 @@ $ cd ..
 $ catkin build
 ```
 
-The last piece of the installation is to compile the IKFast library for the robot. For the Panda:
+## 
+
+Separately from the catkin workspace, if you are using the Panda, you must compile the IKFast library for the robot (The Spot uses analytical IK and thus this isnt needed). 
 ```
 $ cd src/pb_robot/src/pb_robot/ikfast/franka_panda
 $ python setup.py build
