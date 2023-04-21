@@ -6,7 +6,7 @@ import pb_robot
 from transformations import translation_matrix, rotation_matrix, inverse_matrix, concatenate_matrices
 
 class Spot(pb_robot.body.Body):
-    '''Create all the functions for controlling the Panda Robot arm'''
+    '''Create all the functions for controlling the Boston Dynamics Spot'''
     def __init__(self):
         '''Generate the body and establish the other classes'''
         self.urdf_file = 'models/spot_description/spot.urdf'
@@ -24,7 +24,7 @@ class Spot(pb_robot.body.Body):
         self.arm = Manipulator(self.id, self.arm_joints, self.hand, self.eeName)
 
 class SpotArm(pb_robot.body.Body):
-    '''Create all the functions for controlling the Panda Robot arm'''
+    '''Create all the functions for controlling the Boston Dynamics Spot arm (no legs)'''
     def __init__(self):
         '''Generate the body and establish the other classes'''
         self.urdf_file = 'models/spot_description/spot_arm.urdf'
@@ -34,19 +34,19 @@ class SpotArm(pb_robot.body.Body):
                 self.id = pb_robot.utils.load_model(self.urdf_file, fixed_base=True)
         pb_robot.body.Body.__init__(self, self.id)
 
-        self.hand = SpotHand(self.id)
-        self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1'] 
+        self.eeName = 'arm_link_wr1'
+        self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
-        self.arm = Manipulator(self.id, self.arm_joints, self.hand, 'arm_link_wr1')
+
+        self.hand = SpotHand(self.id, eeFrame=self.link_from_name(self.eeName))
+        self.arm = Manipulator(self.id, self.arm_joints, self.hand, self.eeName)
 
 class Manipulator(object):
     '''Class for Arm specific functions. Most of this is simply syntatic sugar for function
     calls to body functions. Within the documentation, N is the number of degrees of 
-    freedom, which is 7 for Panda '''
+    freedom, which is 6 for Spot'''
     def __init__(self, bodyID, joints, hand, eeName):
-        '''Establish all the robot specific variables and set up key
-        data structures. Eventually it might be nice to read the specific variables
-        from a combination of the urdf and a yaml file'''
+        '''Establish all the robot specific variables'''
         self.bodyID = bodyID
         self.id = bodyID
         self.__robot = pb_robot.body.Body(self.bodyID)
@@ -55,7 +55,10 @@ class Manipulator(object):
         self.eeFrame = self.__robot.link_from_name(eeName)
         self.hand = hand
 
-        # Use IK fast for inverse kinematics
+        # Eventually add a more fleshed out planning suite
+        self.birrt = pb_robot.planners.BiRRTPlanner()
+        self.snap = pb_robot.planners.SnapPlanner()
+
         self.collisionfn_cache = {}
         self.startq = [0]*len(joints)
 
@@ -120,7 +123,7 @@ class Manipulator(object):
         self.__robot.set_transform(old_pose)
         return pose 
 
-    def randomConfiguration(self):
+    def randomConfiguration(self, obstacles=None):
         '''Generate a random configuration inside the position limits
         that doesn't have self-collision
         @return Nx1 configuration'''
@@ -129,12 +132,17 @@ class Manipulator(object):
             dofs = numpy.zeros(len(lower))
             for i in range(len(lower)):
                 dofs[i] = random.uniform(lower[i], upper[i])
-            if self.IsCollisionFree(dofs, obstacles=[]): #self_collisions=True
+            if self.IsCollisionFree(dofs, obstacles=obstacles):
                 return dofs
 
     def ComputeIK(self, wrist_pose_worldF, robot_worldF=None, seed_q=None):
-        '''Compute the analytic inverse kinematics of a transform, with the option
-        to bias towards a seed configuration'''
+        '''Uses Tomas's analytical IK function. 
+        @param wrist_pose_worldF The desired transform of the wrist in the world frame
+        @param robot_worldF The transform of the robot in the world frame. If none given, 
+                            assumes the current transform of the robot
+        @param seed_q If a seed configuration is given the solver will return the 
+                      IK solution that is closest to the seed. 
+        @return q IK solution! (or none if no solution)'''
 
         # shoulder to base (0, 0, 0) - that is height above floor
         SHOULDER_OFFSET = inverse_matrix(translation_matrix([0.292, 0., 0.873]))
