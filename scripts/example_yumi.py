@@ -37,7 +37,7 @@ def randomConfiguration(yumi):
         dofs[i] = random.uniform(lower[i], upper[i])
     return dofs
 
-def main(): 
+if __name__ == '__main__':
     pb_robot.utils.connect(use_gui=True)
     pb_robot.utils.disable_real_time()
 
@@ -75,6 +75,3 @@ def main():
     print('Quit?')
     pb_robot.utils.wait_for_user()
     pb_robot.utils.disconnect()
-
-if __name__ == '__main__':
-    main()
