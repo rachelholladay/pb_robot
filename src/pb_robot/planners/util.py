@@ -7,7 +7,6 @@ Various utility functions for constrained tool manipulation
 
 import numpy
 import random
-import tsr 
 
 def generatePath(path_array):
     '''Given an array of poses, create an OpenRAVE executable path
@@ -73,6 +72,7 @@ def CreateTSRFromPose(manip, pose):
     @param manip Manipulator to use use (required for tsr)
     @param pose 4x4 transform to center TSR on
     @return tsr_chain chain with single pose TSR'''
+    import tsr
     goal_tsr = tsr.tsr.TSR(T0_w=pose)
     tsr_chain = tsr.tsr.TSRChain(sample_goal=True, TSR=goal_tsr)
     return tsr_chain

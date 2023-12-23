@@ -209,7 +209,7 @@ class Manipulator(object):
                 self.__robot, self.joints, obstacles, attachments, self_collisions)
         return self.collisionfn_cache[key]
 
-    def IsCollisionFree(self, q, obstacles=None, self_collisions=True):
+    def IsCollisionFree(self, q, obstacles=None, self_collisions=True, handJoint=None):
         '''Check if a configuration is collision-free. Given any grasped objects
         we do not collision-check against those. 
         @param q Configuration to check at
@@ -218,6 +218,9 @@ class Manipulator(object):
         # This is to cover that the collision function sets joints, but not using the arm version
         oldq = self.GetJointValues()
         self.SetJointValues(oldq)
+        if handJoint is not None:
+            (oldhand, _) = self.hand.GetJointPositions()
+            self.hand.MoveTo(handJoint)
 
         collisionfn = self.get_collisionfn(obstacles=obstacles, self_collisions=self_collisions)
 
@@ -230,6 +233,8 @@ class Manipulator(object):
 
         # Restore configuration
         self.SetJointValues(oldq)
+        if handJoint is not None:
+            self.hand.MoveTo(oldhand*2)
         return val and distances
 
     def HasClearance(self, q):
