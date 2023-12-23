@@ -74,6 +74,8 @@ class Manipulator(object):
         self.collisionfn_cache = {}
 
         self.faces = []
+        self.ee_offset = 0.12
+        self.finger_offset = 0.08
 
     def get_name(self):
         return self.__robot.get_name()
@@ -169,7 +171,7 @@ class Manipulator(object):
             if self.IsCollisionFree(dofs, self_collisions=True, obstacles=[]):
                 return dofs
 
-    def ComputeIK(self, transform, seed_q=None, max_distance=0.2):
+    def ComputeIK(self, transform, seed_q=None, force_seed=False, max_distance=0.2):
         '''Compute the inverse kinematics of a transform, with the option 
         to bias towards a seed configuration. If no IK can be found with that
         bias we attempt to find an IK without that bias
@@ -191,7 +193,7 @@ class Manipulator(object):
                                                 pose, max_distance=max_distance, max_time=0.05), None)
             self.SetJointValues(old_q)
             # If no ik, fall back on unseed version
-            if q is None:
+            if q is None and not force_seed:
                 return self.ComputeIK(transform)
         return q 
 

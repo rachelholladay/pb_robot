@@ -32,6 +32,27 @@ STATIC_MASS = 0
 MAX_DISTANCE = 0
 
 #####################################
+
+# Models
+
+# Robots
+ROOMBA_URDF = 'models/turtlebot/roomba.urdf'
+TURTLEBOT_URDF = 'models/turtlebot/turtlebot_holonomic.urdf'
+DRAKE_IIWA_URDF = "models/drake/iiwa_description/urdf/iiwa14_polytope_collision.urdf"
+KUKA_IIWA_URDF = "kuka_iiwa/model.urdf"
+KUKA_IIWA_GRIPPER_SDF = "kuka_iiwa/kuka_with_gripper.sdf"
+R2D2_URDF = "r2d2.urdf"
+MINITAUR_URDF = "quadruped/minitaur.urdf"
+HUMANOID_MJCF = "mjcf/humanoid.xml"
+HUSKY_URDF = "husky/husky.urdf"
+RACECAR_URDF = 'racecar/racecar.urdf' # racecar_differential.urdf
+YUMI_URDF = "models/yumi_description/yumi.urdf"
+
+# Objects
+KIVA_SHELF_SDF = "kiva_shelf/model.sdf"
+
+#####################################
+
 # Savers
 
 # TODO: contextlib
@@ -1383,23 +1404,6 @@ def inverse_kinematics(robot, link, target_pose, max_iterations=200, custom_limi
             if helper.all_between(lower_limits, kinematic_conf, upper_limits):
                 return kinematic_conf
     return None
-
-def actionPath_hand(tool_path, grasp_toolF):
-    '''Given a series of waypoints of the tool in the world frame we
-    create a path for the hand in the world frame by transforming 
-    using the grasp
-    @param tool_path Series of waypoints of tool in world frame
-    @param grasp_toolF Pose of the end effector when grasping in the tool frame
-    @return hand_pose Series of waypoints of the hand in the world frame'''
-    return numpy.array([numpy.dot(tool_path[i], grasp_toolF) for i in xrange(len(tool_path))])
-
-def ComputePrePose(og_pose, directionVector, relation=None):
-    backup = np.eye(4)
-    backup[0:3, 3] = directionVector
-    prepose = np.dot(og_pose, backup)
-    if relation is not None:
-        prepose = np.dot(prepose, relation)
-    return prepose
 
 #####################################
 
