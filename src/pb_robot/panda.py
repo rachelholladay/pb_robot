@@ -9,9 +9,12 @@ from pb_robot.ikfast.ikfast import closest_inverse_kinematics, ikfast_inverse_ki
 
 class Panda(pb_robot.body.Body):
     '''Create all the functions for controlling the Panda Robot arm'''
-    def __init__(self):
+    def __init__(self, stick=False):
         '''Generate the body and establish the other classes'''
-        self.urdf_file = 'models/franka_description/robots/panda_arm_hand.urdf'
+        if stick:
+            self.urdf_file = 'models/franka_description/robots/panda_arm_stickhand.urdf'
+        else:
+            self.urdf_file = 'models/franka_description/robots/panda_arm_hand.urdf'
         #self.urdf_file = 'models/franka_description/robots/panda_arm.urdf'
 
         with pb_robot.helper.HideOutput(): 
