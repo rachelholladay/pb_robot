@@ -2,9 +2,9 @@ from collections import defaultdict, deque, namedtuple
 import itertools
 import numpy
 import pybullet as p
-import pb_robot
-from pb_robot.joint import Joint
-from pb_robot.link import Link
+import pb_robot_spot
+from pb_robot_spot.joint import Joint
+from pb_robot_spot.link import Link
 
 CLIENT = 0
 
@@ -19,9 +19,9 @@ JOINT_TYPES = {
 }
 
 def createBody(path, **kwargs):
-    with pb_robot.helper.HideOutput():
-        with pb_robot.utils.LockRenderer():
-            body_id = pb_robot.utils.load_model(path, **kwargs)
+    with pb_robot_spot.helper.HideOutput():
+        with pb_robot_spot.utils.LockRenderer():
+            body_id = pb_robot_spot.utils.load_model(path, **kwargs)
     return Body(body_id, path)
 
 BodyInfo = namedtuple('BodyInfo', ['base_name', 'body_name'])
@@ -79,8 +79,8 @@ class Body(object):
         return '{}{}'.format(name, int(self.id))
 
     def remove_body(self):
-        if (CLIENT, self.id) in pb_robot.utils.INFO_FROM_BODY:
-            del pb_robot.utils.INFO_FROM_BODY[CLIENT, self.id]
+        if (CLIENT, self.id) in pb_robot_spot.utils.INFO_FROM_BODY:
+            del pb_robot_spot.utils.INFO_FROM_BODY[CLIENT, self.id]
         return p.removeBody(self.id, physicsClientId=CLIENT)
 
     def set_color(self, color):
@@ -94,7 +94,7 @@ class Body(object):
         return p.getBasePositionAndOrientation(self.id, physicsClientId=CLIENT)
 
     def get_transform(self):
-        return pb_robot.geometry.tform_from_pose(self.get_pose())
+        return pb_robot_spot.geometry.tform_from_pose(self.get_pose())
 
     def get_point(self):
         return self.get_pose()[0]
@@ -103,10 +103,10 @@ class Body(object):
         return self.get_pose()[1] # [x,y,z,w]
 
     def get_euler(self):
-        return pb_robot.geometry.euler_from_quat(self.get_quat())
+        return pb_robot_spot.geometry.euler_from_quat(self.get_quat())
 
     def get_base_values(self):
-        return pb_robot.utils.base_values_from_pose(self.get_pose())
+        return pb_robot_spot.utils.base_values_from_pose(self.get_pose())
 
     def set_pose(self, pose):
         (point, quat) = pose
@@ -122,7 +122,7 @@ class Body(object):
                 obj.set_transform(obj_worldF)
 
     def set_transform(self, transform):
-        self.set_pose(pb_robot.geometry.pose_from_tform(transform))
+        self.set_pose(pb_robot_spot.geometry.pose_from_tform(transform))
 
     def set_point(self, point):
         self.set_pose((point, self.get_quat()))
@@ -131,13 +131,13 @@ class Body(object):
         self.set_pose((self.get_point(), quat))
 
     def set_euler(self, euler):
-        self.set_quat(pb_robot.geometry.quat_from_euler(euler))
+        self.set_quat(pb_robot_spot.geometry.quat_from_euler(euler))
 
     def set_base_values(self, values):
         _, _, z = self.get_point()
         x, y, theta = values
         self.set_point((x, y, z))
-        self.set_quat(pb_robot.geometry.z_rotation(theta))
+        self.set_quat(pb_robot_spot.geometry.z_rotation(theta))
 
     def get_velocity(self):
         linear, angular = p.getBaseVelocity(self.id, physicsClientId=CLIENT)
@@ -274,7 +274,7 @@ class Body(object):
         movable_from_original = {o: m for m, o in enumerate(self.get_movable_joints())}
         return [movable_from_original[joint.jointID] for joint in fjoints]
 
-    def get_custom_limits(self, joints=None, custom_limits={}, circular_limits=pb_robot.utils.UNBOUNDED_LIMITS):
+    def get_custom_limits(self, joints=None, custom_limits={}, circular_limits=pb_robot_spot.utils.UNBOUNDED_LIMITS):
         joint_limits = []
         for joint in self.format_joint_input(joints):
             if joint in custom_limits:
@@ -354,7 +354,7 @@ class Body(object):
     def get_relative_pose(self, link1, link2):
         world_from_link1 = link1.get_link_pose()
         world_from_link2 = link2.get_link_pose()
-        link2_from_link1 = pb_robot.geometry.multiply(pb_robot.geometry.invert(world_from_link2), world_from_link1)
+        link2_from_link1 = pb_robot_spot.geometry.multiply(pb_robot_spot.geometry.invert(world_from_link2), world_from_link1)
         return link2_from_link1
 
     def get_dynamics_info(self, linkID=None):
@@ -426,7 +426,7 @@ class Body(object):
         link = -1
         print('Link id: {} | Name: {} | Mass: {} | Collision: {} | Visual: {}'.format(
             link, self.get_base_name(), self.get_mass(),
-            len(pb_robot.utils.get_collision_data(self, self.base_link)), -1)) # len(get_visual_data(body, link))))
+            len(pb_robot_spot.utils.get_collision_data(self, self.base_link)), -1)) # len(get_visual_data(body, link))))
 
         for link in self.links:
             pjoint = link.parentJoint
@@ -434,5 +434,5 @@ class Body(object):
             print('Link id: {} | Name: {} | Joint: {} | Parent: {} | Mass: {} | Collision: {} | Visual: {}'.format(
                 link.linkID, link.get_link_name(), joint_name,
                 (link.get_link_parent()).get_link_name(), self.get_mass(link.linkID),
-                len(pb_robot.utils.get_collision_data(self, link.linkID)), -1)) # len(get_visual_data(body, link)))) #XXX move this function from utils
+                len(pb_robot_spot.utils.get_collision_data(self, link.linkID)), -1)) # len(get_visual_data(body, link)))) #XXX move this function from utils
 

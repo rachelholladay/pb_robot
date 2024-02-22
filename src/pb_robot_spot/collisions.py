@@ -2,7 +2,7 @@ from collections import namedtuple
 from itertools import product, combinations
 import numpy as np
 import pybullet as p
-import pb_robot
+import pb_robot_spot
 
 MAX_DISTANCE = 0
 CLIENT = 0
@@ -21,7 +21,7 @@ def get_collision_fn(body, joints, obstacles, attachments, self_collisions, cust
     lower_limits, upper_limits = body.get_custom_limits(joints, custom_limits)
 
     def collision_fn(q):
-        if not pb_robot.helper.all_between(lower_limits, q, upper_limits):
+        if not pb_robot_spot.helper.all_between(lower_limits, q, upper_limits):
             return True
         body.set_joint_positions(joints, q) 
         for link1, link2 in check_link_pairs:
@@ -53,7 +53,7 @@ def get_moving_links(body, joints):
     moving_links = set()
     for joint in joints:
         jlink = body.child_link_from_joint(joint)
-        link = pb_robot.link.Link(body, jlink.jointID)
+        link = pb_robot_spot.link.Link(body, jlink.jointID)
         if link not in moving_links:
             moving_links.update(link.get_link_subtree())
     return list(moving_links)
