@@ -1,6 +1,6 @@
 import math
 import numpy
-import pb_robot
+import pb_robot_spot
 from tsr.tsr import TSR, TSRChain
 
 def box_grasp(box, push_distance=0.0):
@@ -10,8 +10,8 @@ def box_grasp(box, push_distance=0.0):
     """
     ee_to_palm_distance = 0.098 
     lateral_offset = ee_to_palm_distance + push_distance
-    aabb = pb_robot.aabb.get_aabb(box)
-    (_, box_w, box_h) = pb_robot.aabb.get_aabb_extent(aabb)
+    aabb = pb_robot_spot.aabb.get_aabb(box)
+    (_, box_w, box_h) = pb_robot_spot.aabb.get_aabb_extent(aabb)
 
     T0_w = box.get_transform()
     chain_list = []
@@ -124,8 +124,8 @@ def cylinder_grasp(cylinder, height_shrink=0.8, epsilon=0.005, hand_offset=0.105
     @param push_distance The distance to push before grasping
     """
 
-    aabb = pb_robot.aabb.get_aabb(cylinder)
-    (cylinder_l, cylinder_w, cylinder_h) = pb_robot.aabb.get_aabb_extent(aabb)
+    aabb = pb_robot_spot.aabb.get_aabb(cylinder)
+    (cylinder_l, cylinder_w, cylinder_h) = pb_robot_spot.aabb.get_aabb_extent(aabb)
     cylinder_shrunk_h = height_shrink*cylinder_h
 
     #ee_to_palm_distance = 0.15 #0.105 TODO make the parameter 

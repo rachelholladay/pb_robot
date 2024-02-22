@@ -1,6 +1,6 @@
 import random
 from collections import namedtuple
-import pb_robot.geometry as geometry
+import pb_robot_spot.geometry as geometry
 
 IKFastInfo = namedtuple('IKFastInfo', ['module_name', 'base_link', 'ee_link', 'free_joints'])
 USE_ALL = False

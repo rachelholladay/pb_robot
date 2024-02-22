@@ -6,8 +6,8 @@ from .crg_planners.rrt_connect import birrt, direct_path
 
 import numpy as np
 import pybullet as p
-import pb_robot
-import pb_robot.geometry as geometry
+import pb_robot_spot
+import pb_robot_spot.geometry as geometry
 
 PI = np.pi
 CIRCULAR_LIMITS = -PI, PI
@@ -172,7 +172,7 @@ def get_collision_fn(body, joints, obstacles, attachments, self_collisions, disa
     # TODO: maybe prune the link adjacent to the robot
     # TODO: test self collision with the holding
     def collision_fn(q):
-        if not pb_robot.helper.all_between(lower_limits, q, upper_limits):
+        if not pb_robot_spot.helper.all_between(lower_limits, q, upper_limits):
             #print('Joint limits violated')
             return True
         body.set_joint_positions(joints, q)
@@ -180,11 +180,11 @@ def get_collision_fn(body, joints, obstacles, attachments, self_collisions, disa
             attachment.assign()
         for link1, link2 in check_link_pairs:
             # Self-collisions should not have the max_distance parameter
-            if pb_robot.collisions.pairwise_link_collision(body, link1, body, link2): #, **kwargs):
+            if pb_robot_spot.collisions.pairwise_link_collision(body, link1, body, link2): #, **kwargs):
                 #print(get_body_name(body), get_link_name(body, link1), get_link_name(body, link2))
                 return True
         for body1, body2 in check_body_pairs:
-            if pb_robot.collisions.pairwise_collision(body1, body2, **kwargs):
+            if pb_robot_spot.collisions.pairwise_collision(body1, body2, **kwargs):
                 #print(get_body_name(body1), get_body_name(body2))
                 return True
         return False
@@ -375,7 +375,7 @@ def plan_base_motion(body, end_conf, base_limits, obstacles=[], direct=False,
     def collision_fn(q):
         # TODO: update this function
         body.set_base_values(q)
-        return any(pb_robot.collisions.pairwise_collision(body, obs, max_distance=max_distance) for obs in obstacles)
+        return any(pb_robot_spot.collisions.pairwise_collision(body, obs, max_distance=max_distance) for obs in obstacles)
 
     start_conf = body.get_base_values()
     if collision_fn(start_conf):
@@ -444,7 +444,7 @@ def plan_cartesian_motion(robot, first_joint, target_link, waypoint_poses,
     selected_movable_joints = robot.prune_fixed_joints(selected_links)
     assert(target_link in selected_links)
     selected_target_link = selected_links.index(target_link)
-    sub_robot = pb_robot.utils.clone_body(robot, links=selected_links, visual=False, collision=False) # TODO: joint limits
+    sub_robot = pb_robot_spot.utils.clone_body(robot, links=selected_links, visual=False, collision=False) # TODO: joint limits
     sub_movable_joints = sub_robot.get_movable_joints(robot)
     #null_space = get_null_space(robot, selected_movable_joints, custom_limits=custom_limits)
     null_space = None
@@ -452,15 +452,15 @@ def plan_cartesian_motion(robot, first_joint, target_link, waypoint_poses,
     solutions = []
     for target_pose in waypoint_poses:
         for iteration in range(max_iterations):
-            sub_kinematic_conf = pb_robot.utils.inverse_kinematics_helper(sub_robot, selected_target_link, target_pose, null_space=null_space)
+            sub_kinematic_conf = pb_robot_spot.utils.inverse_kinematics_helper(sub_robot, selected_target_link, target_pose, null_space=null_space)
             if sub_kinematic_conf is None:
                 sub_robot.remove_body()
                 return None
             sub_robot.set_joint_positions(sub_movable_joints, sub_kinematic_conf)
-            if pb_robot.utils.is_pose_close(sub_robot.get_link_pose(selected_target_link), target_pose, **kwargs):
+            if pb_robot_spot.utils.is_pose_close(sub_robot.get_link_pose(selected_target_link), target_pose, **kwargs):
                 robot.set_joint_positions(selected_movable_joints, sub_kinematic_conf)
                 kinematic_conf = robot.get_configuration()
-                if not pb_robot.helper.all_between(lower_limits, kinematic_conf, upper_limits):
+                if not pb_robot_spot.helper.all_between(lower_limits, kinematic_conf, upper_limits):
                     #movable_joints = get_movable_joints(robot)
                     #print([(get_joint_name(robot, j), l, v, u) for j, l, v, u in
                     #       zip(movable_joints, lower_limits, kinematic_conf, upper_limits) if not (l <= v <= u)])

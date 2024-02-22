@@ -1,0 +1,7 @@
+README.md
+setup.py
+pb_robot_spot.egg-info/PKG-INFO
+pb_robot_spot.egg-info/SOURCES.txt
+pb_robot_spot.egg-info/dependency_links.txt
+pb_robot_spot.egg-info/requires.txt
+pb_robot_spot.egg-info/top_level.txt

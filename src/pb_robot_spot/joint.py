@@ -1,8 +1,8 @@
 from collections import namedtuple
 import pybullet as p
-import pb_robot
-import pb_robot.helper as helper
-import pb_robot.geometry as geometry
+import pb_robot_spot
+import pb_robot_spot.helper as helper
+import pb_robot_spot.geometry as geometry
 
 CLIENT = 0
 
@@ -64,7 +64,7 @@ class Joint(object): # inherit what?
     def get_joint_limits(self):
         if self.is_circular():
             # TODO: return UNBOUNDED_LIMITS
-            return pb_robot.utils.CIRCULAR_LIMITS
+            return pb_robot_spot.utils.CIRCULAR_LIMITS
         joint_info = self.get_joint_info()
         return joint_info.jointLowerLimit, joint_info.jointUpperLimit
 
@@ -95,7 +95,7 @@ class Joint(object): # inherit what?
         return joint_info.parentFramePos, joint_info.parentFrameOrn
 
     def set_joint_position(self, value):
-        p.resetJointState(self.bodyID, self.jointID, value, targetVelocity=0, physicsClientId=pb_robot.utils.CLIENT)
+        p.resetJointState(self.bodyID, self.jointID, value, targetVelocity=0, physicsClientId=pb_robot_spot.utils.CLIENT)
 
     def violates_limit(self, value):
         if self.is_circular():

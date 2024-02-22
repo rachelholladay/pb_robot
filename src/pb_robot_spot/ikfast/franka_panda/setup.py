@@ -6,7 +6,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.pardir, os.pardir, os.pardir))
 
-from pb_robot.ikfast.compile import compile_ikfast
+from pb_robot_spot.ikfast.compile import compile_ikfast
 
 # Build C++ extension by running: 'python setup.py'
 # see: https://docs.python.org/3/extending/building.html
@@ -14,7 +14,7 @@ from pb_robot.ikfast.compile import compile_ikfast
 def main():
     # lib name template: 'ikfast_<robot name>'
     sys.argv[:] = sys.argv[:1] + ['build']
-    robot_name = 'spot_arm'
+    robot_name = 'panda_arm'
     compile_ikfast(module_name='ikfast_{}'.format(robot_name),
                    cpp_filename='ikfast_{}.cpp'.format(robot_name))
 

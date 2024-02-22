@@ -2,19 +2,19 @@ import random
 import time
 import numpy
 import pybullet as p
-import pb_robot
+import pb_robot_spot
 from transformations import translation_matrix, rotation_matrix, inverse_matrix, concatenate_matrices
 
-class Spot(pb_robot.body.Body):
+class Spot(pb_robot_spot.body.Body):
     '''Create all the functions for controlling the Boston Dynamics Spot'''
     def __init__(self):
         '''Generate the body and establish the other classes'''
         self.urdf_file = 'models/spot_description/spot.urdf'
 
-        with pb_robot.helper.HideOutput(): 
-            with pb_robot.utils.LockRenderer():
-                self.id = pb_robot.utils.load_model(self.urdf_file, fixed_base=True)
-        pb_robot.body.Body.__init__(self, self.id)
+        with pb_robot_spot.helper.HideOutput(): 
+            with pb_robot_spot.utils.LockRenderer():
+                self.id = pb_robot_spot.utils.load_model(self.urdf_file, fixed_base=True)
+        pb_robot_spot.body.Body.__init__(self, self.id)
 
         self.eeName = 'arm_link_wr1'
         self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
@@ -23,16 +23,16 @@ class Spot(pb_robot.body.Body):
         self.hand = SpotHand(self.id, eeFrame=self.link_from_name(self.eeName))
         self.arm = Manipulator(self.id, self.arm_joints, self.hand, self.eeName)
 
-class SpotArm(pb_robot.body.Body):
+class SpotArm(pb_robot_spot.body.Body):
     '''Create all the functions for controlling the Boston Dynamics Spot arm (no legs)'''
     def __init__(self):
         '''Generate the body and establish the other classes'''
         self.urdf_file = 'models/spot_description/spot_arm.urdf'
 
-        with pb_robot.helper.HideOutput():
-            with pb_robot.utils.LockRenderer():
-                self.id = pb_robot.utils.load_model(self.urdf_file, fixed_base=True)
-        pb_robot.body.Body.__init__(self, self.id)
+        with pb_robot_spot.helper.HideOutput():
+            with pb_robot_spot.utils.LockRenderer():
+                self.id = pb_robot_spot.utils.load_model(self.urdf_file, fixed_base=True)
+        pb_robot_spot.body.Body.__init__(self, self.id)
 
         self.eeName = 'arm_link_wr1'
         self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
@@ -49,15 +49,15 @@ class Manipulator(object):
         '''Establish all the robot specific variables'''
         self.bodyID = bodyID
         self.id = bodyID
-        self.__robot = pb_robot.body.Body(self.bodyID)
+        self.__robot = pb_robot_spot.body.Body(self.bodyID)
         self.joints = joints
         self.jointsID = [j.jointID for j in self.joints]
         self.eeFrame = self.__robot.link_from_name(eeName)
         self.hand = hand
 
         # Eventually add a more fleshed out planning suite
-        self.birrt = pb_robot.planners.BiRRTPlanner()
-        self.snap = pb_robot.planners.SnapPlanner()
+        self.birrt = pb_robot_spot.planners.BiRRTPlanner()
+        self.snap = pb_robot_spot.planners.SnapPlanner()
 
         self.collisionfn_cache = {}
         self.startq = [0]*len(joints)
@@ -102,7 +102,7 @@ class Manipulator(object):
     def GetEETransform(self):
         '''Get the end effector transform
         @return 4x4 transform of end effector in the world'''
-        return pb_robot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
+        return pb_robot_spot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
 
     def ComputeFK(self, q, pose=None):
         '''Compute the forward kinematics of a configuration q
@@ -159,11 +159,11 @@ class Manipulator(object):
     def get_collisionfn(self, obstacles=None, self_collisions=True):
         if obstacles is None:
             # If no set of obstacles given, assume all obstacles in the environment (that aren't the robot and not grasped)
-            obstacles = [b for b in pb_robot.utils.get_bodies() if self.get_name() not in b.get_name()]
+            obstacles = [b for b in pb_robot_spot.utils.get_bodies() if self.get_name() not in b.get_name()]
         attachments = []
         key = (frozenset(obstacles), frozenset(attachments), self_collisions)
         if key not in self.collisionfn_cache:
-            self.collisionfn_cache[key] = pb_robot.collisions.get_collision_fn(
+            self.collisionfn_cache[key] = pb_robot_spot.collisions.get_collision_fn(
                 self.__robot, self.joints, obstacles, attachments, self_collisions)
         return self.collisionfn_cache[key]
 
@@ -227,7 +227,7 @@ class Manipulator(object):
             time.sleep(timestep)
 
                         
-class SpotHand(pb_robot.body.Body):
+class SpotHand(pb_robot_spot.body.Body):
     '''Set position commands for the Spot hand'''
     def __init__(self, bodyID=None, finger_name='arm_f1x', eeFrame=None):
         '''Pull fingers from robot's joint list'''
@@ -242,7 +242,7 @@ class SpotHand(pb_robot.body.Body):
         '''
 
         self.bodyID = bodyID
-        pb_robot.body.Body.__init__(self, bodyID)
+        pb_robot_spot.body.Body.__init__(self, bodyID)
         self.finger = self.joint_from_name(finger_name)
         self.joints = [self.finger]
         self.jointsID = [j.jointID for j in self.joints]
@@ -272,7 +272,7 @@ class SpotHand(pb_robot.body.Body):
     def GetEETransform(self):
         '''Get the end effector transform
         @return 4x4 transform of end effector in the world'''
-        return pb_robot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
+        return pb_robot_spot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
 
 #########################################
 # Spot IK Utils

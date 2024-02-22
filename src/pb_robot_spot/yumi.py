@@ -1,7 +1,7 @@
 from collections import defaultdict, deque, namedtuple
 import numpy as np
 import pybullet as p
-import pb_robot
+import pb_robot_spot
 import geometry
 import body
 
@@ -10,7 +10,7 @@ import body
 class Yumi(body.Body):
     def __init__(self, **kwargs):
         self.urdf_file = 'models/yumi_description/yumi.urdf'
-        self.id = pb_robot.utils.load_model(self.urdf_file, **kwargs) 
+        self.id = pb_robot_spot.utils.load_model(self.urdf_file, **kwargs) 
         body.Body.__init__(self, self.id)
 
         # TODO pull this information from like a yaml or setup file
@@ -54,14 +54,14 @@ class YumiArm(object):
 
     def ComputeIK(self, pose):
         #pose = geometry.pose_from_tform(transform)
-        q = pb_robot.utils.inverse_kinematics(self.__robot, self.hand, pose)
+        q = pb_robot_spot.utils.inverse_kinematics(self.__robot, self.hand, pose)
         return q 
 
     def RandomIK(self, transform, objName=None, relation=None):
         #TODO check about randomizing this
         #TODO implement objName, relation information 
         pose = geometry.pose_from_tform(transform)
-        q = pb_robot.utils.inverse_kinematics(self.__robot, self.hand, pose)
+        q = pb_robot_spot.utils.inverse_kinematics(self.__robot, self.hand, pose)
         #transform = geometry.tform_from_pose(q)
         #return transform
         return q
