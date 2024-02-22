@@ -20,7 +20,6 @@ setup(
         "pybullet",
         "recordclass",
         "networkx",
-    ],
-    include_package_data=True,
+    ]
     )
 
