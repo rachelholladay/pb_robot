@@ -4,7 +4,6 @@
 
 import os
 import numpy
-import IPython
 import pbrspot
 
 if __name__ == '__main__':
@@ -23,7 +22,7 @@ if __name__ == '__main__':
 
     # Add floor object 
     curr_path = os.getcwd()
-    models_path = os.path.join(os.path.dirname(curr_path), 'models')
+    models_path = os.path.join(curr_path, 'models')
     floor_file = os.path.join(models_path, 'short_floor.urdf')
     floor = pbrspot.body.createBody(floor_file)
     floor.set_point([0, 0, 0])
@@ -124,8 +123,6 @@ if __name__ == '__main__':
     # I'd just have to hook it up better
     if path is not None:
         robot.arm.ExecutePositionPath(path)
-
-    IPython.embed()
     
     # Close out Pybullet
     pbrspot.utils.wait_for_user()
