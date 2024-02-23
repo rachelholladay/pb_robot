@@ -302,7 +302,7 @@ class BiRRTPlanner(object):
         if not self.manip.IsCollisionFree(q, obstacles=self.obstacles):
             return False
         cdist = util.cspaceLength([q_parent, q])
-        count = int(cdist / 0.1) # Check every 0.1 distance (a little arbitrary)
+        count = int(cdist / 0.025) # Check every 0.025 distance (a little arbitrary)
 
         # linearly interpolate between that at some step size and check all those points
         interp = [numpy.linspace(q_parent[i], q[i], count+1).tolist() for i in range(len(q))]

@@ -4,9 +4,8 @@ This is a fork of [Caelan's ss-pybullet](https://github.com/caelan/ss-pybullet) 
 
 ## Installation
 
-The first thing is to install the primary python dependencies: 
 ```
-$ pip install numpy pybullet recordclass networkx
+pip install -e .
 ```
 
 Given the dependencies there are two possible ways to use the repo. The first is to treat it as a standalone repo and just clone it. As long as you dont want to use the TSR repo for grasp sets, there are no additional dependencies. The second strategy is to use a catkin workspace. If you have already got ROS, want to use a bunch of packages and/or want to match the robot setup then this works out nicely. 

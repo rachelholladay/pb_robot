@@ -23,13 +23,18 @@ class RelativePose(object):
         return 'rp{}'.format(id(self) % 1000)
 
 class BodyGrasp(object):
-    def __init__(self, body, grasp_objF, manip, r=0.0085, mu=None, N=40):
+    def __init__(self, body, grasp_objF, manip, r=0.0085, mu=None, N=50):
         self.body = body
         self.grasp_objF = grasp_objF #Tform
         self.manip = manip
         self.r = r
         self.mu = mu
-        self.N = N
+
+        #XXX this is a bad workaround
+        if 'potato' in self.body.get_name() or 'blocker' in self.body.get_name():
+            self.N = 30
+        else:
+            self.N = N
     def simulate(self):
         if self.body.get_name() in self.manip.grabbedObjects:
             # Object grabbed, need to release
@@ -41,13 +46,36 @@ class BodyGrasp(object):
             self.manip.hand.MoveTo(0.01)
             self.manip.Grab(self.body, self.grasp_objF)
     def execute(self, realRobot=None):
+        print('Grasping {} with {}'.format(self.body.get_name(), self.N))
         hand_pose = realRobot.hand.joint_positions()
-        if hand_pose['panda_finger_joint1'] < 0.039: # open pose
+        if hand_pose['panda_finger_joint1'] < 0.035: # open pose
             realRobot.hand.open()
         else:
             realRobot.hand.grasp(0.02, self.N, epsilon_inner=0.1, epsilon_outer=0.1)
     def __repr__(self):
         return 'g{}'.format(id(self) % 1000)
+
+class OpenHand(object):
+    def __init__(self, manip):
+        self.manip = manip
+    def simulate(self):
+        self.manip.hand.Open()
+    def execute(self, realRobot=None):
+        realRobot.hand.open()
+    def __repr__(self):
+        return 'open{}'.format(id(self) % 1000)
+
+class CloseHand(object):
+    def __init__(self, manip, N=40):
+        self.manip = manip
+        self.N = N
+    def simulate(self):
+        self.manip.hand.MoveTo(0.01)
+    def execute(self, realRobot=None):
+        realRobot.hand.grasp(0.02, self.N, epsilon_inner=0.1, epsilon_outer=0.1)
+    def __repr__(self):
+        return 'close{}'.format(id(self) % 1000)
+
 
 class ViseGrasp(object):
     def __init__(self, body, grasp_objF, hand, N=60):
@@ -55,6 +83,12 @@ class ViseGrasp(object):
         self.grasp_objF = grasp_objF #Tform
         self.hand = pbrspot.wsg50_hand.WSG50Hand(hand.id)
         self.N = N
+        self.hand50 = True
+        if '32' in hand.get_name():
+            self.hand = pb_robot.wsg32_hand.WSG32Hand(hand.id)
+            self.hand50 = False
+        else:
+            self.hand = pb_robot.wsg50_hand.WSG50Hand(hand.id)
     def simulate(self):
         if self.body.get_name() in self.hand.grabbedObjects:
             # Object grabbed, need to release
@@ -62,8 +96,8 @@ class ViseGrasp(object):
             self.hand.Release(self.body)
         else:
             # Object not grabbed, need to grab
-            #self.hand.Close()
-            self.hand.MoveTo(-0.04, 0.04) 
+            self.hand.Close()
+            #self.hand.MoveTo(-0.04, 0.04) 
             self.hand.Grab(self.body, self.grasp_objF)
     def execute(self, realRobot=None):
         # This is a bad work-around
@@ -153,7 +187,9 @@ class CartImpedPath(object):
         self.timestep = timestep
     def simulate(self):
         q = self.manip.GetJointValues()
-        if numpy.linalg.norm(numpy.subtract(q, self.start_q)) > 1e-3:
+        delta_q = numpy.linalg.norm(numpy.subtract(q, self.start_q))
+        delta_pose = pb_robot.geometry.GeodesicDistance(self.manip.ComputeFK(q), self.manip.ComputeFK(self.start_q))
+        if (delta_pose > 1e-3) and (delta_q > 1e-1):
             raise IOError("Incorrect starting position")
         # Going to fake cartesian impedance control
         for i in xrange(len(self.ee_path)):
@@ -162,7 +198,7 @@ class CartImpedPath(object):
             time.sleep(self.timestep)
     def execute(self, realRobot=None):
         import quaternion
-        #FIXME adjustment based on current position..? Need to play with how execution goes.
+        # Adjustment based on current position..? Need to play with how execution goes.
         sim_start = self.ee_path[0, 0:3, 3]
         real_start = realRobot.endpoint_pose()['position']
         sim_real_diff = numpy.subtract(sim_start, real_start)
@@ -177,3 +213,18 @@ class CartImpedPath(object):
 
     def __repr__(self):
         return 'ci_path{}'.format(id(self) % 1000)
+
+class ResetForCart(object):
+    def __init__(self, manip, start_q):
+        self.manip = manip
+        self.start_q = start_q
+
+    def simulate(self):
+        pass
+
+    def execute(self, realRobot=None):
+        qreal = realRobot.joint_angles()
+        realRobot.move_to_joint_positions(qreal)
+
+    def __repr__(self):
+        return 'ci_reset{}'.format(id(self) % 1000)

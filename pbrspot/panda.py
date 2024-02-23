@@ -26,7 +26,8 @@ class Panda(pbrspot.body.Body):
                                                         ee_link='panda_link8',
                                                         free_joints=['panda_joint7'])
         self.torque_limits = [87, 87, 87, 87, 12, 12, 12]
-        self.startq = [0, -numpy.pi/4.0, 0, -0.75*numpy.pi, 0, numpy.pi/2.0, numpy.pi/4.0]
+        self.startq = [0, -0.25*numpy.pi, 0, -0.75*numpy.pi, 0, 0.5*numpy.pi, 0.25*numpy.pi]
+        self.tuckedq = [0, -0.5*numpy.pi, 0, -numpy.pi+0.1, 0, 0.5*numpy.pi, 0.25*numpy.pi]
         self.hand = PandaHand(self.id)
         self.arm = Manipulator(self.id, self.arm_joints, self.hand, 'panda_hand', self.ik_info, self.torque_limits, self.startq)
 
@@ -236,6 +237,7 @@ class Manipulator(object):
         return val and distances
 
     def HasClearance(self, q):
+        #XXX was distance=0.01. Now its 0.005
         for i in self.__robot.all_links:
             for j in self.__robot.all_links:
                 linkI = i.linkID
@@ -243,7 +245,7 @@ class Manipulator(object):
                 # Dont want to check adjancent links or link 8 (fake hand joint)
                 if (abs(linkI-linkJ) < 2) or (linkI == 8) or (linkJ == 8):
                     break
-                pts = p.getClosestPoints(self.__robot.id, self.__robot.id, distance=0.01, linkIndexA=linkI, linkIndexB=linkJ)
+                pts = p.getClosestPoints(self.__robot.id, self.__robot.id, distance=0.005, linkIndexA=linkI, linkIndexB=linkJ)
                 if len(pts) > 0:
                     return False 
         return True
@@ -300,7 +302,7 @@ class Manipulator(object):
         @return 6D tuple of forces and torques'''
         return p.getJointState(self.__robot.id, self.ft_joint.jointID)[2]
 
-    def ExecutePositionPath(self, path, timestep=0.05):
+    def ExecutePositionPath(self, path, timestep=0.1):
         '''Simulate a configuration space path by incrementally setting the 
         joint values. This is instead of using control based methods
         #TODO add checks to insure path is valid. 
