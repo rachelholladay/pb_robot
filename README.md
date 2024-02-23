@@ -1,6 +1,6 @@
-# pb_robot
+# pbrspot
 
-This is a fork of [Caelan's ss-pybullet](https://github.com/caelan/ss-pybullet) with a lot of the same base functionality but a different UI. This repo is still in heavy development both in the sense of (1) reformatting the UI and (2) adding other functionality. These instructions are also skewed toward the use of the Franka Emika Panda, since thats what I'm primarily using. 
+This is a fork of [Rachel Holladay's pb_robot](https://github.com/rachelholladay/pb_robot) with a lot of the same base functionality but a different UI. This repo is still in heavy development both in the sense of (1) reformatting the UI and (2) adding other functionality. These instructions are also skewed toward the use of the Franka Emika Panda, since thats what I'm primarily using. 
 
 ## Installation
 
