@@ -1,9 +1,25 @@
-#!/usr/bin/env python
-from distutils.core import setup
-from catkin_pkg.python_setup import generate_distutils_setup
+"""Setup script.
 
-d = generate_distutils_setup(
-            packages=['pb_robot'],
-            package_dir={'': 'src'},
-)
-setup(**d)
+Usage examples:
+
+    pip install -e .
+    pip install -e .[develop]
+"""
+
+from setuptools import find_packages, setup
+
+path_to_myproject = "src/"
+
+setup(
+    name="pbrspot",
+    version="0.1.0",
+    packages=find_packages(include=["pbrspot", "pbrspot.*"]),
+    include_package_data=True,
+    install_requires=[
+        "numpy",
+        "pybullet",
+        "recordclass",
+        "networkx",
+    ]
+    )
+

@@ -4,38 +4,49 @@ This is a fork of [Caelan's ss-pybullet](https://github.com/caelan/ss-pybullet) 
 
 ## Installation
 
-The first thing is to install a few python dependencies: 
 ```
-$ pip install numpy pybullet recordclass networkx
+pip install -e .
 ```
 
-Given that, we now setup a catkin workspace. While there are not known dependencies, these instructions were writen from Ubuntu 16.04 and ROS Kinetic. For this installation we will assume ROS is already installed. To create a catkin workspace (named `my-workspace` below): 
+Given the dependencies there are two possible ways to use the repo. The first is to treat it as a standalone repo and just clone it. As long as you dont want to use the TSR repo for grasp sets, there are no additional dependencies. The second strategy is to use a catkin workspace. If you have already got ROS, want to use a bunch of packages and/or want to match the robot setup then this works out nicely. 
+
+### Setup Catkin Workspace (Optional) 
+
+For this installation we will assume ROS is already installed. To create a catkin workspace (named `my-workspace` below): 
 ```
 $ mkdir my-workspace && cd my-workspace
-$ catkin config --extend /opt/ros/indigo
+$ catkin config --extend /opt/ros/melodic
 $ catkin config -a --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
 ```
 
-Next we want to checkout code. For now, we do not use a rosinstall and wstool (although this will probably be updated in the future):
+Next we want to checkout code. 
 ```
 $ cd src
 $ git clone https://github.com/rachelholladay/pb_robot.git
+$ cd pb_robot
+$ git checkout python3
+$ cd ..
 ```
-This package uses TSRs to define grasp sets and therefore we clone an additional package: 
+If you'd like to use TSRs to define grasp sets, we clone an additional package: 
 ```
-git clone https://github.com/personalrobotics/tsr.git
+$ git clone https://github.com/rachelholladay/tsr.git
+$ cd tsr
+$ git checkout python3
+$ cd ..
 ```
 
-Given that we can build:
+Given that we can build the workspace:
 ```
 $ cd ..
 $ catkin build
 ```
 
-The last piece of the installation is to compile the IKFast library for the robot. For the Panda:
+## 
+
+Separately from the catkin workspace, if you are using the Panda, you must compile the IKFast library for the robot (The Spot uses analytical IK and thus this isnt needed). 
 ```
 $ cd src/pb_robot/src/pb_robot/ikfast/franka_panda
-$ python2 setup.py build
+$ python setup.py build
 ```
 
 ## Repo Structure
@@ -85,15 +96,3 @@ IPython.embed()
 utils.wait_for_user()
 utils.disconnect()             
 ```
-
-I'll soon add an example using TSRs and BiRRT for grasping a block. 
-
-## Upcoming To Dos
-
-There is a lot of development to do. Namely I'm planning on: 
-* Further cleaning up / breakup functionality from forked code base
-* Adding more documentation (only `src/pb_robot/panda.py` has the level of documention I'm happy with)
-* Integrating in control methods and use of dynamics (under development in `scripts/controlExperiments.py`)
-* Adding more planners (right now its just snap and birrt) and possibly integrating OMPL
-* Keeping generic items in `pb_robot` and breaking out robot specific items (ik function, robot models, TSRs, etc) into robot specific repos, i.e. `pb_panda`, `pb_yumi`, `pb_movo`, etc. As part of this any non-robot models would get moved to the [object's repo](https://github.com/mcubelab/mcube_objects).
-* Further syncing the panda development with the [real robot side repo](https://github.com/rachelholladay/franka_ros_interface) I'm developing in tandem. 
