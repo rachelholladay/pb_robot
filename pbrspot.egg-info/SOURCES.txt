@@ -1,0 +1,7 @@
+README.md
+setup.py
+pbrspot.egg-info/PKG-INFO
+pbrspot.egg-info/SOURCES.txt
+pbrspot.egg-info/dependency_links.txt
+pbrspot.egg-info/requires.txt
+pbrspot.egg-info/top_level.txt
