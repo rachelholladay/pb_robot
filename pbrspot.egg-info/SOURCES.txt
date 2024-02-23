@@ -20,6 +20,7 @@ pbrspot/transformations.py
 pbrspot/utils.py
 pbrspot/viz.py
 pbrspot/vobj.py
+pbrspot/wsg32_hand.py
 pbrspot/wsg50_hand.py
 pbrspot/yumi.py
 pbrspot.egg-info/PKG-INFO
