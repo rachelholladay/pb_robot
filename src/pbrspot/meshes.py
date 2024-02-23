@@ -1,5 +1,5 @@
 from collections import defaultdict, deque, namedtuple
-import pb_robot_spot.helper as helper
+import pbrspot.helper as helper
 
 # Mesh & Pointcloud Files
 Mesh = namedtuple('Mesh', ['vertices', 'faces'])

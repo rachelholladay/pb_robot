@@ -2,7 +2,7 @@ import math
 from itertools import product, combinations
 import pybullet as p
 import numpy as np
-import pb_robot_spot
+import pbrspot
 
 CLIENT = 0
 BASE_LINK = -1
@@ -37,8 +37,8 @@ def remove_all_debug():
 def add_body_name(body, name=None, **kwargs):
     if name is None:
         name = body.get_name()
-    with pb_robot_spot.utils.PoseSaver(body):
-        body.set_pose(pb_robot_spot.geometry.unit_pose())
+    with pbrspot.utils.PoseSaver(body):
+        body.set_pose(pbrspot.geometry.unit_pose())
         lower, upper = aabbs.get_aabb(body)
     #position = (0, 0, upper[2])
     position = upper
@@ -57,17 +57,17 @@ def draw_link_name(body, link=BASE_LINK):
                     parent=body, parent_link=link)
 
 def draw_pose(pose, length=0.1, **kwargs):
-    origin_world = pb_robot_spot.geometry.tform_point(pose, np.zeros(3))
+    origin_world = pbrspot.geometry.tform_point(pose, np.zeros(3))
     handles = []
     for k in range(3):
         axis = np.zeros(3)
         axis[k] = 1
-        axis_world = pb_robot_spot.geometry.tform_point(pose, length*axis)
+        axis_world = pbrspot.geometry.tform_point(pose, length*axis)
         handles.append(add_line(origin_world, axis_world, color=axis, **kwargs))
     return handles
 
 def draw_tform(tform, **kwargs):
-    return draw_pose(pb_robot_spot.geometry.pose_from_tform(tform), **kwargs)
+    return draw_pose(pbrspot.geometry.pose_from_tform(tform), **kwargs)
 
 def draw_tsr(tsr, count=25, **kwargs):
     for i in range(count):
@@ -83,7 +83,7 @@ def draw_circle(center, radius, n=24, **kwargs):
     vertices = []
     for i in range(n):
         theta = i*2*math.pi/n
-        unit = np.append(pb_robot_spot.geometry.unit_from_theta(theta), [0])
+        unit = np.append(pbrspot.geometry.unit_from_theta(theta), [0])
         vertices.append(center+radius*unit)
     return add_segments(vertices, closed=True, **kwargs)
 

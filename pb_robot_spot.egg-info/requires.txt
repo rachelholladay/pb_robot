@@ -1,4 +1,0 @@
-numpy
-pybullet
-recordclass
-networkx

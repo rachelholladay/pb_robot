@@ -1,19 +1,19 @@
 import numpy
 import pybullet as p
-import pb_robot_spot
+import pbrspot
 
-class WSG50Hand(pb_robot_spot.body.Body):
+class WSG50Hand(pbrspot.body.Body):
     '''Set position commands for the panda hand. Have not yet included
     gripping with force.'''
     def __init__(self, bodyID=None, left_finger_name='base_joint_gripper_left', right_finger_name='base_joint_gripper_right'):
         '''Pull left and right fingers from robot's joint list'''
         if bodyID is None:
             urdf_file = 'models/wsg50_description/wsg_50.urdf'
-            with pb_robot_spot.helper.HideOutput():
-                with pb_robot_spot.utils.LockRenderer():
-                    bodyID = pb_robot_spot.utils.load_model(urdf_file, fixed_base=True)
+            with pbrspot.helper.HideOutput():
+                with pbrspot.utils.LockRenderer():
+                    bodyID = pbrspot.utils.load_model(urdf_file, fixed_base=True)
 
-        pb_robot_spot.body.Body.__init__(self, bodyID)
+        pbrspot.body.Body.__init__(self, bodyID)
         self.left_finger = self.joint_from_name(left_finger_name)
         self.right_finger = self.joint_from_name(right_finger_name)
 
@@ -53,7 +53,7 @@ class WSG50Hand(pb_robot_spot.body.Body):
         '''Get the end effector transform
         @return 4x4 transform of end effector in the world'''
         eeFrame = self.__robot.link_from_name('panda_hand')
-        return pb_robot_spot.geometry.tform_from_pose(eeFrame.get_link_pose())
+        return pbrspot.geometry.tform_from_pose(eeFrame.get_link_pose())
 
 #TODO want to move to wsg50_common and proper imports (not command line calls)
 import os

@@ -2,8 +2,8 @@ from __future__ import print_function
 import math
 import numpy as np
 import pybullet as p
-import pb_robot_spot.transformations as transformations
-import pb_robot_spot.helper as helper 
+import pbrspot.transformations as transformations
+import pbrspot.helper as helper 
 
 CLIENT = 0
 # Geometry

@@ -1,7 +1,7 @@
 from collections import namedtuple
 import numpy
 import pybullet as p
-import pb_robot_spot.geometry as geometry
+import pbrspot.geometry as geometry
 
 CLIENT = 0
 

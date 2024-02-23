@@ -1,4 +1,4 @@
-import pb_robot_spot
+import pbrspot
 import numpy
 import time
 
@@ -53,7 +53,7 @@ class ViseGrasp(object):
     def __init__(self, body, grasp_objF, hand, N=60):
         self.body = body
         self.grasp_objF = grasp_objF #Tform
-        self.hand = pb_robot_spot.wsg50_hand.WSG50Hand(hand.id)
+        self.hand = pbrspot.wsg50_hand.WSG50Hand(hand.id)
         self.N = N
     def simulate(self):
         if self.body.get_name() in self.hand.grabbedObjects:
@@ -67,7 +67,7 @@ class ViseGrasp(object):
             self.hand.Grab(self.body, self.grasp_objF)
     def execute(self, realRobot=None):
         # This is a bad work-around
-        realhand = pb_robot_spot.wsg50_hand.WSG50HandReal()
+        realhand = pbrspot.wsg50_hand.WSG50HandReal()
         if realhand.get_width < realhand.openValue: 
             realhand.open()
         else:

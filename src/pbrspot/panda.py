@@ -2,26 +2,26 @@ import random
 import time
 import numpy
 import pybullet as p
-import pb_robot_spot
+import pbrspot
 from .panda_controls import PandaControls
 
-from pb_robot_spot.ikfast.ikfast import closest_inverse_kinematics, ikfast_inverse_kinematics
+from pbrspot.ikfast.ikfast import closest_inverse_kinematics, ikfast_inverse_kinematics
 
-class Panda(pb_robot_spot.body.Body):
+class Panda(pbrspot.body.Body):
     '''Create all the functions for controlling the Panda Robot arm'''
     def __init__(self):
         '''Generate the body and establish the other classes'''
         self.urdf_file = 'models/franka_description/robots/panda_arm_hand.urdf'
         #self.urdf_file = 'models/franka_description/robots/panda_arm.urdf'
 
-        with pb_robot_spot.helper.HideOutput(): 
-            with pb_robot_spot.utils.LockRenderer():
-                self.id = pb_robot_spot.utils.load_model(self.urdf_file, fixed_base=True)
-        pb_robot_spot.body.Body.__init__(self, self.id)
+        with pbrspot.helper.HideOutput(): 
+            with pbrspot.utils.LockRenderer():
+                self.id = pbrspot.utils.load_model(self.urdf_file, fixed_base=True)
+        pbrspot.body.Body.__init__(self, self.id)
 
         self.arm_joint_names = ['panda_joint{}'.format(i) for i in range(1, 8)]
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
-        self.ik_info = pb_robot_spot.ikfast.utils.IKFastInfo(module_name='franka_panda.ikfast_panda_arm',
+        self.ik_info = pbrspot.ikfast.utils.IKFastInfo(module_name='franka_panda.ikfast_panda_arm',
                                                         base_link='panda_link0',
                                                         ee_link='panda_link8',
                                                         free_joints=['panda_joint7'])
@@ -41,7 +41,7 @@ class Manipulator(object):
         from a combination of the urdf and a yaml file'''
         self.bodyID = bodyID
         self.id = bodyID
-        self.__robot = pb_robot_spot.body.Body(self.bodyID)
+        self.__robot = pbrspot.body.Body(self.bodyID)
         self.joints = joints
         self.jointsID = [j.jointID for j in self.joints]
         self.eeFrame = self.__robot.link_from_name(eeName)
@@ -49,9 +49,9 @@ class Manipulator(object):
         self.torque_limits = torque_limits
 
         # Eventually add a more fleshed out planning suite
-        self.birrt = pb_robot_spot.planners.BiRRTPlanner()
-        self.snap = pb_robot_spot.planners.SnapPlanner()
-        self.cbirrt = pb_robot_spot.planners.CBiRRTPlanner()
+        self.birrt = pbrspot.planners.BiRRTPlanner()
+        self.snap = pbrspot.planners.SnapPlanner()
+        self.cbirrt = pbrspot.planners.CBiRRTPlanner()
 
         # Add force torque sensor at wrist
         self.ft_joint = self.__robot.joint_from_name('panda_hand_joint')
@@ -139,7 +139,7 @@ class Manipulator(object):
     def GetEETransform(self):
         '''Get the end effector transform
         @return 4x4 transform of end effector in the world'''
-        return pb_robot_spot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
+        return pbrspot.geometry.tform_from_pose(self.eeFrame.get_link_pose())
 
     def ComputeFK(self, q, tform=None):
         '''Compute the forward kinematics of a configuration q
@@ -178,7 +178,7 @@ class Manipulator(object):
         @return Nx1 configuration if successful, else 'None' '''
 
         #These function operate in transforms but the IK function operates in poses
-        pose = pb_robot_spot.geometry.pose_from_tform(transform)
+        pose = pbrspot.geometry.pose_from_tform(transform)
 
         if seed_q is None:
             q = next(ikfast_inverse_kinematics(self.__robot, self.ik_info, 
@@ -198,12 +198,12 @@ class Manipulator(object):
     def get_collisionfn(self, obstacles=None, self_collisions=True):
         if obstacles is None:
             # If no set of obstacles given, assume all obstacles in the environment (that aren't the robot and not grasped)
-            obstacles = [b for b in pb_robot_spot.utils.get_bodies() if self.get_name() not in b.get_name()
+            obstacles = [b for b in pbrspot.utils.get_bodies() if self.get_name() not in b.get_name()
                          and b.get_name() not in self.grabbedObjects.keys()]
         attachments = [g for g in self.grabbedObjects.values()]
         key = (frozenset(obstacles), frozenset(attachments), self_collisions)
         if key not in self.collisionfn_cache:
-            self.collisionfn_cache[key] = pb_robot_spot.collisions.get_collision_fn(
+            self.collisionfn_cache[key] = pbrspot.collisions.get_collision_fn(
                 self.__robot, self.joints, obstacles, attachments, self_collisions)
         return self.collisionfn_cache[key]
 
@@ -256,7 +256,7 @@ class Manipulator(object):
         @param q Configuration
         @return Nx6 array of J(q) '''
         allq = numpy.append(q, [0, 0]).tolist()
-        (translate, rotate) = pb_robot_spot.planning.compute_jacobian(self.__robot, self.eeFrame, positions=allq)
+        (translate, rotate) = pbrspot.planning.compute_jacobian(self.__robot, self.eeFrame, positions=allq)
         jacobian = numpy.hstack((numpy.array(translate), numpy.array(rotate)))
         return numpy.transpose(jacobian[0:7, :])
 
@@ -318,19 +318,19 @@ class Manipulator(object):
         return None
 
                         
-class PandaHand(pb_robot_spot.body.Body):
+class PandaHand(pbrspot.body.Body):
     '''Set position commands for the panda hand. Have not yet included
     gripping with force.'''
     def __init__(self, bodyID=None, left_finger_name='panda_finger_joint1', right_finger_name='panda_finger_joint2'):
         '''Pull left and right fingers from robot's joint list'''
         if bodyID is None:
             urdf_file = 'models/franka_description/robots/hand.urdf'
-            with pb_robot_spot.helper.HideOutput():
-                with pb_robot_spot.utils.LockRenderer():
-                    bodyID = pb_robot_spot.utils.load_model(urdf_file, fixed_base=True)
+            with pbrspot.helper.HideOutput():
+                with pbrspot.utils.LockRenderer():
+                    bodyID = pbrspot.utils.load_model(urdf_file, fixed_base=True)
 
         self.bodyID = bodyID
-        pb_robot_spot.body.Body.__init__(self, bodyID)
+        pbrspot.body.Body.__init__(self, bodyID)
         self.left_finger = self.joint_from_name(left_finger_name)
         self.right_finger = self.joint_from_name(right_finger_name)
         self.joints = [self.left_finger, self.right_finger]
@@ -368,4 +368,4 @@ class PandaHand(pb_robot_spot.body.Body):
         '''Get the end effector transform
         @return 4x4 transform of end effector in the world'''
         eeFrame = self.__robot.link_from_name('panda_hand')
-        return pb_robot_spot.geometry.tform_from_pose(eeFrame.get_link_pose())
+        return pbrspot.geometry.tform_from_pose(eeFrame.get_link_pose())

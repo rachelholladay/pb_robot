@@ -1,7 +1,7 @@
 import time
 import numpy
 import pybullet as p
-import pb_robot_spot
+import pbrspot
 
 class PandaControls(object):
     def __init__(self, arm):
@@ -11,7 +11,7 @@ class PandaControls(object):
     def clampTorque(self, tau_d):
         tau_limit = [87, 87, 87, 87, 50, 50, 50] #robot.arm.torque_limits
         for i in range(len(tau_d)):
-            tau_d[i] = pb_robot_spot.helper.clip(tau_d[i], -tau_limit[i], tau_limit[i])
+            tau_d[i] = pbrspot.helper.clip(tau_d[i], -tau_limit[i], tau_limit[i])
         return tau_d
 
     def positionControl(self, q, threshold=0.1):
@@ -152,14 +152,14 @@ class PandaControls(object):
         p.setGravity(0, 0, -9.81)
 
         position_d_target = pose_d_target[0:3, 3]
-        ori_d_target = pb_robot_spot.geometry.quat_from_matrix(pose_d_target[0:3, 0:3])
+        ori_d_target = pbrspot.geometry.quat_from_matrix(pose_d_target[0:3, 0:3])
         stiffness_target = numpy.diag(stiffness_params)
         damping_target = numpy.diag(2.0*numpy.sqrt(stiffness_params))
 
         stiffness = numpy.eye(6)
         damping = numpy.eye(6)
         position_d = self.arm.GetEETransform()[0:3, 3]
-        ori_d = pb_robot_spot.geometry.quat_from_matrix(self.arm.GetEETransform()[0:3, 0:3])
+        ori_d = pbrspot.geometry.quat_from_matrix(self.arm.GetEETransform()[0:3, 0:3])
         gain = 0.1
 
         prev_q = self.arm.GetJointValues()
@@ -184,11 +184,11 @@ class PandaControls(object):
             position_error = current_pose[0:3, 3] - position_d
             error[0:3] = position_error
 
-            current_ori = pb_robot_spot.geometry.quat_from_matrix(current_pose[0:3, 0:3])
+            current_ori = pbrspot.geometry.quat_from_matrix(current_pose[0:3, 0:3])
             # Compute different quaternion
-            error_ori_quat = pb_robot_spot.transformations.quaternion_multiply(current_ori, pb_robot_spot.transformations.quaternion_inverse(ori_d))
+            error_ori_quat = pbrspot.transformations.quaternion_multiply(current_ori, pbrspot.transformations.quaternion_inverse(ori_d))
             # Convert to axis angle
-            (error_ori_angle, error_ori_axis) = pb_robot_spot.geometry.quatToAxisAngle(error_ori_quat)
+            (error_ori_angle, error_ori_axis) = pbrspot.geometry.quatToAxisAngle(error_ori_quat)
             ori_error = numpy.multiply(error_ori_axis, error_ori_angle)
             error[3:6] = ori_error
 
@@ -210,11 +210,11 @@ class PandaControls(object):
             damping = gain * damping_target + (1 - gain) * damping
             position_d = gain * position_d_target + (1 - gain) * position_d
 
-            (ori_d_angle, ori_d_axis) = pb_robot_spot.geometry.quatToAxisAngle(ori_d)
-            (ori_d_target_angle, ori_d_target_axis) = pb_robot_spot.geometry.quatToAxisAngle(ori_d_target)
+            (ori_d_angle, ori_d_axis) = pbrspot.geometry.quatToAxisAngle(ori_d)
+            (ori_d_target_angle, ori_d_target_axis) = pbrspot.geometry.quatToAxisAngle(ori_d_target)
             ori_d_axis = gain * ori_d_target_axis + (1 - gain) * ori_d_axis
             ori_d_angle = gain * ori_d_target_angle + (1 - gain) * ori_d_angle
-            ori_d = pb_robot_spot.geometry.quat_from_axis_angle(ori_d_axis, ori_d_angle)
+            ori_d = pbrspot.geometry.quat_from_axis_angle(ori_d_axis, ori_d_angle)
 
             p.stepSimulation()
             time.sleep(0.01)

@@ -5,16 +5,16 @@
 import os
 import numpy
 import IPython
-import pb_robot_spot
+import pbrspot
 
 if __name__ == '__main__':
     # Launch pybullet
-    pb_robot_spot.utils.connect(use_gui=True)
-    pb_robot_spot.utils.disable_real_time()
-    pb_robot_spot.utils.set_default_camera()
+    pbrspot.utils.connect(use_gui=True)
+    pbrspot.utils.disable_real_time()
+    pbrspot.utils.set_default_camera()
 
     # Create robot object 
-    robot = pb_robot_spot.spot.Spot()
+    robot = pbrspot.spot.Spot()
     robot.set_point([0, 0, 0])
 
     # Optionally, you could create just an arm, with no base. 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     curr_path = os.getcwd()
     models_path = os.path.join(os.path.dirname(curr_path), 'models')
     floor_file = os.path.join(models_path, 'short_floor.urdf')
-    floor = pb_robot_spot.body.createBody(floor_file)
+    floor = pbrspot.body.createBody(floor_file)
     floor.set_point([0, 0, 0])
 
     # This is intended to show off functionality and provide examples
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # Slighly modify to generate a new pose
     pose[2, 3] += 0.1
     # Visualize this new pose
-    pb_robot_spot.viz.draw_pose(pb_robot_spot.geometry.pose_from_tform(pose), length=0.5, width=10)
+    pbrspot.viz.draw_pose(pbrspot.geometry.pose_from_tform(pose), length=0.5, width=10)
     # Compute IK for this new pose
     newq = robot.arm.ComputeIK(pose)
     # Not that ComputeIK() returns None if the IK solver couldn't find a solution. 
@@ -128,5 +128,5 @@ if __name__ == '__main__':
     IPython.embed()
     
     # Close out Pybullet
-    pb_robot_spot.utils.wait_for_user()
-    pb_robot_spot.utils.disconnect()
+    pbrspot.utils.wait_for_user()
+    pbrspot.utils.disconnect()

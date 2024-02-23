@@ -8,7 +8,7 @@ import time
 from scipy import spatial
 import networkx as nx 
 import numpy
-import pb_robot_spot
+import pbrspot
 import pybullet
 from . import util
 from .plannerTypes import GoalType, ConstraintType
@@ -327,15 +327,15 @@ class CBiRRTPlanner(object):
             q -= delta_q_error
             q = self.clampJointLimits(q)
             if pathTSR:
-                pb_robot_spot.viz.draw_pose(pb_robot_spot.geometry.pose_from_tform(T0_s), length=0.2, width=2)
-                pb_robot_spot.viz.draw_pose(pb_robot_spot.geometry.pose_from_tform(T0_vee), length=0.2, width=10)
+                pbrspot.viz.draw_pose(pbrspot.geometry.pose_from_tform(T0_s), length=0.2, width=2)
+                pbrspot.viz.draw_pose(pbrspot.geometry.pose_from_tform(T0_vee), length=0.2, width=10)
                 print(bw)
                 print(dvee_s)
                 #TODO geodesic error gives x, y, z, theta. Maybe, try using the x, y, z from this metric to see if it improves the projection step..?
-                print(pb_robot_spot.geometry.GeodesicError(T0_s, T0_vee))
-                print(delta_x, pb_robot_spot.geometry.GeodesicDistance(T0_s, T0_vee))
+                print(pbrspot.geometry.GeodesicError(T0_s, T0_vee))
+                print(delta_x, pbrspot.geometry.GeodesicDistance(T0_s, T0_vee))
                 input("Next iteration?")
-            pb_robot_spot.viz.remove_all_debug() 
+            pbrspot.viz.remove_all_debug() 
         return None
          
     def evaluateConstraints(self, constraintType, **kw_args):

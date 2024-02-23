@@ -5,7 +5,7 @@
 import IPython
 import numpy
 import random
-import pb_robot_spot
+import pbrspot
 
 def GeodesicError(t1, t2):
     """
@@ -16,7 +16,7 @@ def GeodesicError(t1, t2):
     """
     trel = numpy.dot(numpy.linalg.inv(t1), t2)
     trans = numpy.dot(t1[0:3, 0:3], trel[0:3, 3])
-    angle, _, _ = pb_robot_spot.transformations.rotation_from_matrix(trel) 
+    angle, _, _ = pbrspot.transformations.rotation_from_matrix(trel) 
     return numpy.hstack((trans, angle))
 
 def GeodesicDistance(t1, t2, r=1.0):
@@ -38,11 +38,11 @@ def randomConfiguration(yumi):
     return dofs
 
 if __name__ == '__main__':
-    pb_robot_spot.utils.connect(use_gui=True)
-    pb_robot_spot.utils.disable_real_time()
+    pbrspot.utils.connect(use_gui=True)
+    pbrspot.utils.disable_real_time()
 
-    yumi = pb_robot_spot.yumi.Yumi() 
-    pb_robot_spot.utils.set_default_camera()
+    yumi = pbrspot.yumi.Yumi() 
+    pbrspot.utils.set_default_camera()
     #utils.dump_world()
 
     yumi.left_arm.SetJointValues([2, 0, 0, 0, 0, 0, 0])
@@ -59,19 +59,19 @@ if __name__ == '__main__':
     for i in range(100):
         q = randomConfiguration(yumi)
         pose = yumi.right_arm.ComputeFK(q)
-        full_solved_q = yumi.right_arm.ComputeIK(pb_robot_spot.geometry.pose_from_tform(pose))  # edit ComputeIK
+        full_solved_q = yumi.right_arm.ComputeIK(pbrspot.geometry.pose_from_tform(pose))  # edit ComputeIK
         if full_solved_q is None:
             #print("No solution")
             continue
         solved_q = full_solved_q[0:7]
         solved_pose = yumi.right_arm.ComputeFK(solved_q)
         error = GeodesicDistance(pose, solved_pose)
-        second_error = pb_robot_spot.utils.is_pose_close(pb_robot_spot.geometry.pose_from_tform(pose), 
-                                           pb_robot_spot.geometry.pose_from_tform(solved_pose))
+        second_error = pbrspot.utils.is_pose_close(pbrspot.geometry.pose_from_tform(pose), 
+                                           pbrspot.geometry.pose_from_tform(solved_pose))
         print((error < 0.002) and second_error)
 
     IPython.embed()
   
     print('Quit?')
-    pb_robot_spot.utils.wait_for_user()
-    pb_robot_spot.utils.disconnect()
+    pbrspot.utils.wait_for_user()
+    pbrspot.utils.disconnect()
