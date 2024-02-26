@@ -1,4 +1,6 @@
-#!/usr/bin/env python
+# This example is intended to show off functionality and provide examples
+# I suppose its somewhat in the style of a Jupyter notebook... 
+# but without that nice incremental sections! So it'll just run everything!  
 
 import os
 import numpy as np
@@ -27,10 +29,6 @@ if __name__ == '__main__':
     floor_file = os.path.join(models_path, 'short_floor.urdf')
     floor = pbrspot.body.createBody(floor_file)
     floor.set_point([0, 0, 0])
-
-    # This is intended to show off functionality and provide examples
-    # I suppose its somewhat in the style of a Jupyter notebook.. 
-    # but without that nice incremental sections! So it'll just run everything!  
 
     ####################
     # FK and IK Examples
