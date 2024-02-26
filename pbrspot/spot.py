@@ -1,4 +1,3 @@
-import random
 import time
 import numpy
 import pybullet as p
@@ -123,23 +122,25 @@ class Manipulator(object):
         self.__robot.set_transform(old_pose)
         return pose 
 
-    def randomConfiguration(self, obstacles=None):
+    def randomConfiguration(self, rng, obstacles=None):
         '''Generate a random configuration inside the position limits
         that doesn't have self-collision
+        rng: np.random.Generator object
         @return Nx1 configuration'''
         (lower, upper) = self.GetJointLimits()
         while True:
             dofs = numpy.zeros(len(lower))
             for i in range(len(lower)):
-                dofs[i] = random.uniform(lower[i], upper[i])
+                dofs[i] = rng.uniform(lower[i], upper[i], 1)
             if self.IsCollisionFree(dofs, obstacles=obstacles):
                 return dofs
 
-    def ComputeIK(self, wrist_pose_worldF, robot_worldF=None, seed_q=None):
+    def ComputeIK(self, wrist_pose_worldF, rng, robot_worldF=None, seed_q=None):
         '''Uses Tomas's analytical IK function. 
         @param wrist_pose_worldF The desired transform of the wrist in the world frame
         @param robot_worldF The transform of the robot in the world frame. If none given, 
                             assumes the current transform of the robot
+        @param rng np.random.Generator used to generate seeded randomness
         @param seed_q If a seed configuration is given the solver will return the 
                       IK solution that is closest to the seed. 
         @return q IK solution! (or none if no solution)'''
@@ -154,7 +155,7 @@ class Manipulator(object):
         min_limits, max_limits = self.GetJointLimits()
 
         solutions = analytic_spot_ik_6(wrist_pose_shoulderF, min_limits, max_limits)
-        return select_solution(solutions, get_l1_distance, nearby_conf=seed_q)
+        return select_solution(solutions, get_l1_distance, rng, nearby_conf=seed_q)
 
     def get_collisionfn(self, obstacles=None, self_collisions=True):
         if obstacles is None:
@@ -362,9 +363,9 @@ def all_between(lower_limits, values, upper_limits):
     return numpy.less_equal(lower_limits, values).all() and \
            numpy.less_equal(values, upper_limits).all()
 
-def select_solution(solutions, get_distance, nearby_conf_angles=None, **kwargs):
+def select_solution(solutions, get_distance, rng, nearby_conf_angles=None, **kwargs):
     if not solutions:
         return None
     if nearby_conf_angles is None:
-        return random.choice(solutions)
+        return rng.choice(solutions)
     return min(solutions, key=lambda conf: get_distance(nearby_conf_angles, conf, **kwargs))
