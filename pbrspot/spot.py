@@ -15,12 +15,47 @@ class Spot(pbrspot.body.Body):
                 self.id = pbrspot.utils.load_model(self.urdf_file, fixed_base=True)
         pbrspot.body.Body.__init__(self, self.id)
 
+        # Separate out the arm and body/leg joint names.
         self.eeName = 'arm_link_wr1'
         self.arm_joint_names = ['arm_sh0', 'arm_sh1', 'arm_el0', 'arm_el1', 'arm_wr0', 'arm_wr1']
         self.arm_joints = [self.joint_from_name(n) for n in self.arm_joint_names]
+        self.body_joint_names = ['fl_hx', 'fl_hy', 'fl_kn', 'fr_hx', 'fr_hy', 'fr_kn', 'hl_hx', 'hl_hy', 'hl_kn', 'hr_hx', 'hr_hy', 'hr_kn']
 
+        # Instatiate SpotHand and Manipulator objects for the hand and arm so
+        # we can command them separately.
         self.hand = SpotHand(self.id, eeFrame=self.link_from_name(self.eeName))
         self.arm = Manipulator(self.id, self.arm_joints, self.hand, self.eeName)
+
+        # Magic joint values read off spot in standard standing position with
+        # arm tucked.
+        self.joint_name_to_default_conf = {
+            "fl_hx": -0.048669278621673584,
+            "fl_hy": 0.7932546138763428,
+            "fl_kn": -1.6012237071990967,
+            "fr_hx": 0.024689914658665657,
+            "fr_hy": 0.7756315469741821,
+            "fr_kn": -1.5839810371398926,
+            "hl_hx": -0.03060629777610302,
+            "hl_hy": 0.7964075803756714,
+            "hl_kn": -1.5861531496047974,
+            "hr_hx": 0.013064692728221416,
+            "hr_hy": 0.7300644516944885,
+            "hr_kn": -1.5711840391159058,
+            "arm_sh0": 0.00010371208190917969,
+            "arm_sh1": -3.115184783935547,
+            "arm_el0": 3.132749557495117,
+            "arm_el1": 1.5715421438217163,
+            "arm_wr0": -0.01901412010192871,
+            "arm_wr1": -1.5716896057128906,
+            "arm_f1x": -0.008634686470031738
+        }
+
+        # Initialize the legs to be bent into the standard standing pose.
+        self.body_default_q = [self.joint_name_to_default_conf[j_name] for j_name in self.body_joint_names]
+        self.set_joint_positions(self.body_joint_names, self.body_default_q)
+        # Initialize the arm to be tucked.
+        self.arm_tucked_q = [self.joint_name_to_default_conf[j_name] for j_name in self.arm_joint_names]
+        self.arm.set_configuration(self.arm_tucked_q)
 
 class SpotArm(pbrspot.body.Body):
     '''Create all the functions for controlling the Boston Dynamics Spot arm (no legs)'''
