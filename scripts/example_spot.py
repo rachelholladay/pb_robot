@@ -17,7 +17,6 @@ if __name__ == '__main__':
 
     # Create robot object 
     robot = pbrspot.spot.Spot()
-    robot.set_point([0, 0, 0])
 
     # Optionally, you could create just an arm, with no base. 
     #robot = pb_robot.spot.SpotArm()
@@ -29,6 +28,7 @@ if __name__ == '__main__':
     floor_file = os.path.join(models_path, 'short_floor.urdf')
     floor = pbrspot.body.createBody(floor_file)
     floor.set_point([0, 0, 0])
+    robot.set_point([0, 0, pbrspot.placements.stable_z(robot, floor)])
 
     ####################
     # FK and IK Examples
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     other_pose = robot.arm.GetEETransform()
 
     # Slighly modify to generate a new pose
-    pose[0, 3] -= 0.5
+    pose[0, 3] += 0.5
     print(f"Slightly-modified pose to move to: {pose}")
 
     # Visualize this new pose
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     # Lets modify the pose such that its in the floor, bwahaha!
     pose[2, 3] -= 0.5
-    pose[0, 3] += 0.3
+    # pose[0, 3] += 0.3
     ninety_degree_pitch = np.array([[0.0000000,  0.0000000,  1.0000000, 0.0],
                             [0.0000000,  1.0000000,  0.0000000, 0.0],
                             [-1.0000000,  0.0000000,  0.0000000, 0.0],
