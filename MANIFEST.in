@@ -1,1 +1,1 @@
-include pbrspot/models/*
+recursive-include pbrspot/models *
