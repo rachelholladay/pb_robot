@@ -8,6 +8,8 @@ Usage examples:
 
 from setuptools import find_packages, setup
 
+import ipdb; ipdb.set_trace()
+
 setup(
     name="pbrspot",
     version="0.1.0",

@@ -13,5 +13,5 @@ from . import yumi
 from . import aabb
 from . import geometry
 from . import spot
-
 from . import planners
+from . import models
