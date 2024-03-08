@@ -20,6 +20,7 @@ setup(
         "pybullet",
         "recordclass",
         "networkx",
+        "scipy"
     ]
     )
 

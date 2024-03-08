@@ -3,12 +3,14 @@ import numpy
 import pybullet as p
 import pbrspot
 from transformations import translation_matrix, rotation_matrix, inverse_matrix, concatenate_matrices
+import pathlib
 
 class Spot(pbrspot.body.Body):
     '''Create all the functions for controlling the Boston Dynamics Spot'''
     def __init__(self):
         '''Generate the body and establish the other classes'''
-        self.urdf_file = 'models/spot_description/spot.urdf'
+        curr_folder_path = pathlib.Path(__file__).parent.resolve()
+        self.urdf_file = curr_folder_path / 'models/spot_description/spot.urdf'
 
         with pbrspot.helper.HideOutput(): 
             with pbrspot.utils.LockRenderer():
