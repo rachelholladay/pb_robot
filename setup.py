@@ -8,8 +8,6 @@ Usage examples:
 
 from setuptools import find_packages, setup
 
-path_to_myproject = "src/"
-
 setup(
     name="pbrspot",
     version="0.1.0",
