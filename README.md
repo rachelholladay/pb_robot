@@ -8,6 +8,8 @@ This is a fork of [Rachel Holladay's pb_robot](https://github.com/rachelholladay
 pip install -e .
 ```
 
+Note that this repo supports python 3.10+. We recommend python 3.10.14.
+
 ## Repo Structure
 
 Any object in a pybullet environment is a "body". We define a set of function that can operate on a body in the body class, `pbrspot/body.py`. A body may be articulated and have joints and links. If so, when the body is created, we can define joint classes and link classes, each of which have functions that operate on the joint and link objects, defined in `pbrspot/joints.py` and `pbrspot/links.py` respectively. 
