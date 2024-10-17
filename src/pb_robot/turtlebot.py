@@ -47,8 +47,7 @@ class Turtlebot(pb_robot.body.Body):
 
     def get_transform(self):
         #return self.get_transform()
-        print('Be careful of that!')
-        return self.baselink.get_link_pose()
+        return pb_robot.geometry.tform_from_pose(self.baselink.get_link_pose())
 
     #def set_transform(self, tform):
     #    return self.set_transform(tform)
@@ -106,6 +105,13 @@ class Turtlebot(pb_robot.body.Body):
             if self.IsCollisionFree(dofs, self_collisions=True, obstacles=[]):
                 return dofs
 
+    def ComputeFK(self, q):
+        old_q = self.GetJointValues()
+        self.SetJointValues(q)
+        trans = self.get_transform()
+        self.SetJointValues(old_q)
+        return trans
+
     def get_collisionfn(self, obstacles=None, self_collisions=True):
         if obstacles is None:
             # If no set of obstacles given, assume all obstacles in the environment (that aren't the robot and not grasped)
@@ -124,13 +130,8 @@ class Turtlebot(pb_robot.body.Body):
         @param q Configuration to check at
         @param self_collisions Boolean on whether to include self-collision checks
         @return Boolean True if without collisions, false otherwise'''
-
-        #TODO need to fix this, says always in collision
         collisionfn = self.get_collisionfn(obstacles=obstacles, self_collisions=self_collisions)
-        # Evaluate if in collision
-        val = not collisionfn(q)
-        print(val)
-        return val
+        return not collisionfn(q)
 
     def ExecutePositionPath(self, path, timestep=0.05):
         '''Simulate a configuration space path by incrementally setting the 
