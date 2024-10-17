@@ -10,6 +10,7 @@ from . import collisions
 from . import panda
 from . import wsg50_hand
 from . import yumi
+from . import turtlebot
 from . import aabb
 from . import geometry
 
